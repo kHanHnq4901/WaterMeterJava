@@ -1,0 +1,423 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="0dp"
+    tools:context=".ui.dashboard.DashboardFragment">
+
+    <!-- ImageView -->
+    <ImageView
+        android:id="@+id/imageView2"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:scaleType="centerCrop"
+        android:background="@color/primary"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/linearLayout"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintWidth_percent="0.95"
+        android:elevation="4dp"
+        tools:src="@tools:sample/avatars" />
+
+    <!-- Các TextView trên ImageView -->
+
+    <!-- Nút x1, x2, x5, x10 -->
+    <LinearLayout
+        android:id="@+id/linearLayoutButtons"
+        android:layout_width="149dp"
+        android:layout_height="43dp"
+        android:elevation="4dp"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="@id/imageView2"
+        app:layout_constraintEnd_toEndOf="@id/imageView2"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="@id/imageView2">
+
+        <Button
+            android:id="@+id/buttonX1"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:background="@drawable/round_button"
+            android:text="1"
+            android:textColor="@color/white"
+            android:textSize="6dp" />
+
+        <Button
+            android:id="@+id/buttonX2"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:background="@drawable/round_button"
+            android:text="2"
+            android:textColor="@color/white"
+            android:textSize="6dp" />
+
+        <Button
+            android:id="@+id/buttonX5"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:background="@drawable/round_button"
+            android:text="5"
+            android:textColor="@color/white"
+            android:textSize="6dp" />
+
+        <Button
+            android:id="@+id/buttonX10"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@drawable/round_button"
+            android:text="10"
+            android:textColor="@color/white"
+            android:textSize="5dp" />
+    </LinearLayout>
+
+    <!-- LinearLayout chứa các Button chính -->
+    <LinearLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="4dp"
+        android:elevation="4dp"
+        app:layout_constraintTop_toBottomOf="@id/imageView2"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintWidth_percent="0.95">
+
+
+        <Button
+            android:id="@+id/buttonBatDau"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="4dp"
+            android:text="Bắt đầu"
+            android:backgroundTint="@color/green"
+            android:textColor="@color/white"
+            android:elevation="4dp" />
+        <Button
+            android:id="@+id/buttonKetThuc"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="4dp"
+            android:text="Kết thúc"
+            android:backgroundTint="@color/red"
+            android:textColor="@color/white"
+            android:elevation="4dp"
+            android:visibility="gone"
+            />
+        <Button
+            android:id="@+id/buttonLamMoi"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="4dp"
+            android:text="Làm mới"
+            android:backgroundTint="@color/primary"
+            android:textColor="@color/white"
+            android:elevation="4dp" />
+
+        <Button
+            android:id="@+id/buttonLuu"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:backgroundTint="@color/primary"
+            android:elevation="4dp"
+            android:text="Lưu"
+            android:textColor="@color/white" />
+    </LinearLayout>
+    <!-- SeekBar điều chỉnh độ bão hòa -->
+    <SeekBar
+        android:id="@+id/seekBarSaturation"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:max="150"
+        app:layout_constraintTop_toBottomOf="@id/linearLayout"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="8dp" />
+
+    <!-- TextView hiển thị giá trị của SeekBar -->
+    <TextView
+        android:id="@+id/textViewSaturationValue"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="100"
+        android:textSize="12sp"
+        android:textColor="@color/black"
+        app:layout_constraintTop_toBottomOf="@id/seekBarSaturation"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="0dp" />
+
+
+    <!-- RadioGroup -->
+    <RadioGroup
+        android:id="@+id/radioGroup"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:elevation="1dp"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/seekBarSaturation"
+        app:layout_constraintWidth_percent="0.95">
+
+        <RadioButton
+            android:id="@+id/radioButtonQI"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:buttonTint="@color/primary"
+            android:text="QI"
+            android:textColor="@color/black" />
+
+        <RadioButton
+            android:id="@+id/radioButtonQII"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:buttonTint="@color/primary"
+            android:text="QII"
+            android:textColor="@color/black" />
+
+        <RadioButton
+            android:id="@+id/radioButtonQIII"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:buttonTint="@color/primary"
+            android:text="QIII"
+            android:textColor="@color/black" />
+
+        <RadioButton
+            android:id="@+id/radioButtonQ3"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:buttonTint="@color/primary"
+            android:text="Q3"
+            android:textColor="@color/black" />
+    </RadioGroup>
+
+    <!-- LinearLayout chứa các TextView (Tiêu đề) -->
+    <LinearLayout
+        android:id="@+id/linearLayoutTitles"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="4dp"
+        android:elevation="4dp"
+        app:layout_constraintTop_toBottomOf="@id/radioGroup"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintWidth_percent="0.95">
+
+        <TextView
+            android:id="@+id/textViewLuongNuoc"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Lượng nước cũ"
+            android:textSize="12dp"
+            android:textAlignment="center"
+            android:textStyle="bold"
+            android:textColor="@color/black" />
+
+        <TextView
+            android:id="@+id/textViewChenhLech"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="12dp"
+            android:text="Chênh lệch cũ"
+            android:textAlignment="center"
+            android:textStyle="bold"
+            android:textColor="@color/black" />
+
+        <TextView
+            android:id="@+id/textViewTiLe"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="12dp"
+            android:text="Tỉ lệ cũ"
+            android:textAlignment="center"
+            android:textStyle="bold"
+            android:textColor="@color/black" />
+
+        <TextView
+            android:id="@+id/textViewSaiSo1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="12dp"
+            android:text="Sai số cũ"
+            android:textAlignment="center"
+            android:textStyle="bold"
+            android:textColor="@color/black" />
+    </LinearLayout>
+
+    <!-- LinearLayout chứa các TextView (Giá trị) -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="4dp"
+        android:elevation="4dp"
+        app:layout_constraintTop_toBottomOf="@id/linearLayoutTitles"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintWidth_percent="0.95">
+
+        <TextView
+            android:id="@+id/textViewLuongNuocValue"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="0"
+            android:textAlignment="center"
+            android:textColor="@color/green" />
+
+        <TextView
+            android:id="@+id/textViewChenhLechValue"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="0"
+            android:textAlignment="center"
+            android:textColor="@color/green" />
+
+        <TextView
+            android:id="@+id/textViewTiLeValue"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="0"
+            android:textAlignment="center"
+            android:textColor="@color/green" />
+
+        <TextView
+            android:id="@+id/textViewSaiSoValue"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="0"
+            android:textAlignment="center"
+            android:textColor="@color/green" />
+    </LinearLayout>
+
+    <!-- LinearLayout chứa các TextView (Tiêu đề mới) -->
+    <LinearLayout
+        android:id="@+id/linearLayoutTitlesNew"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="25dp"
+        android:elevation="4dp"
+        app:layout_constraintTop_toBottomOf="@id/linearLayoutTitles"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintWidth_percent="0.95">
+
+        <TextView
+            android:id="@+id/textViewLuongNuocNew"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="12dp"
+            android:text="Lượng nước mới"
+            android:textAlignment="center"
+            android:textStyle="bold"
+            android:textColor="@color/black" />
+
+        <TextView
+            android:id="@+id/textViewChenhLechNew"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="12dp"
+            android:text="Chênh lệch mới"
+            android:textAlignment="center"
+            android:textStyle="bold"
+            android:textColor="@color/black" />
+
+        <TextView
+            android:id="@+id/textViewTiLeNew"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="12dp"
+            android:text="Tỉ lệ mới"
+            android:textAlignment="center"
+            android:textStyle="bold"
+            android:textColor="@color/black" />
+
+        <TextView
+            android:id="@+id/textViewSaiSoNew"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="12dp"
+            android:text="Sai số mới"
+            android:textAlignment="center"
+            android:textStyle="bold"
+            android:textColor="@color/black" />
+    </LinearLayout>
+
+    <!-- LinearLayout chứa các TextView (Giá trị mới) -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="8dp"
+        android:elevation="4dp"
+        app:layout_constraintTop_toBottomOf="@id/linearLayoutTitlesNew"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintWidth_percent="0.95">
+
+        <TextView
+            android:id="@+id/textViewLuongNuocValueNew"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="0"
+            android:textAlignment="center"
+            android:textColor="@color/green" />
+
+        <TextView
+            android:id="@+id/textViewChenhLechValueNew"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="0"
+            android:textAlignment="center"
+            android:textColor="@color/green" />
+
+        <TextView
+            android:id="@+id/textViewTiLeValueNew"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="0"
+            android:textAlignment="center"
+            android:textColor="@color/green" />
+
+        <TextView
+            android:id="@+id/textViewSaiSoValueNew"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="0"
+            android:textAlignment="center"
+            android:textColor="@color/green" />
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

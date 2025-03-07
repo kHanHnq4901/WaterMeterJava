@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="0dp"
+    tools:context=".ui.home.HomeFragment">
+
+    <!-- Loading Modal -->
+    <ProgressBar
+        android:id="@+id/loadingIndicator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- ScrollView để chứa nội dung -->
+    <ScrollView
+        android:id="@+id/scrollView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="5dp">
+
+            <!-- Logo -->
+            <ImageView
+                android:id="@+id/logo"
+                android:layout_width="200dp"
+                android:layout_height="100dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="0dp"
+                android:src="@drawable/logo" />
+
+            <!-- Serial Input -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="16dp">
+
+                <TextView
+                    android:id="@+id/serialLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Serial"
+                    android:textColor="#000000"
+                    android:textSize="14sp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginEnd="8dp" />
+
+                <EditText
+                    android:id="@+id/serialInput"
+                    android:layout_width="0dp"
+                    android:layout_height="41dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_weight="1"
+                    android:inputType="number"
+                    android:singleLine="true"
+                    android:imeOptions="actionDone"
+                    android:textSize="14sp" />
+                <ImageView
+                    android:id="@+id/qrImage"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_marginStart="8dp"
+                    android:contentDescription="Quét mã QR"
+                    android:src="@drawable/qr"
+                    android:layout_gravity="bottom" />
+            </LinearLayout>
+
+            <!-- Mã dàn Input -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="16dp">
+
+                <TextView
+                    android:id="@+id/stagingLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Mã dàn"
+                    android:inputType="number"
+                    android:textColor="#000000"
+                    android:textSize="14sp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginEnd="8dp" />
+
+                <EditText
+                    android:id="@+id/stagingInput"
+                    android:layout_width="0dp"
+                    android:layout_height="35dp"
+                    android:layout_weight="1"
+                    android:textSize="14sp"
+                    android:singleLine="true"
+                    android:inputType="number"
+                    android:imeOptions="actionDone"
+                    android:layout_gravity="center_vertical" />
+            </LinearLayout>
+
+            <!-- Loại Radio Buttons -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="16dp">
+
+                <!-- Title -->
+                <TextView
+                    android:id="@+id/typeLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Loại:"
+                    android:textColor="#000000"
+                    android:textSize="14sp"
+                    android:singleLine="true"
+                    android:imeOptions="actionDone"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginEnd="8dp" />
+
+                <!-- RadioGroup -->
+                <RadioGroup
+                    android:id="@+id/typeRadioGroup"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="horizontal">
+
+                    <RadioButton
+                        android:id="@+id/typeSample"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:buttonTint="@color/primary"
+                        android:text="Kiểm"
+                        android:textSize="14sp"
+                        android:checked="true"
+                        />
+
+                    <RadioButton
+                        android:id="@+id/typeCheck"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:buttonTint="@color/primary"
+                        android:text="Mẫu"
+                        android:textSize="14sp" />
+                </RadioGroup>
+            </LinearLayout>
+
+            <!-- Sai số đồng hồ mẫu -->
+            <LinearLayout
+                android:id="@+id/saiSoSection"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="16dp">
+
+                <!-- QI và QII -->
+                <LinearLayout
+
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="8dp">
+
+                    <TextView
+                        android:id="@+id/qiLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="QI"
+                        android:textColor="#000000"
+                        android:textSize="12sp"
+                        android:layout_gravity="center_vertical"
+
+                        android:layout_marginEnd="8dp" />
+
+                    <EditText
+                        android:id="@+id/qiInput"
+                        android:layout_width="0dp"
+                        android:layout_height="35dp"
+                        android:layout_weight="1"
+                        android:textSize="14sp"
+                        android:singleLine="true"
+                        android:inputType="numberDecimal|numberSigned"
+                        android:imeOptions="actionDone"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginEnd="8dp"
+
+                        />
+
+                    <TextView
+                        android:id="@+id/qiiLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="QII"
+                        android:textColor="#000000"
+                        android:textSize="12sp"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginEnd="8dp" />
+
+                    <EditText
+                        android:id="@+id/qiiInput"
+                        android:layout_width="0dp"
+                        android:layout_height="35dp"
+                        android:layout_weight="1"
+                        android:textSize="14sp"
+                        android:inputType="numberDecimal|numberSigned"
+                        android:singleLine="true"
+                        android:imeOptions="actionDone"
+                        android:layout_gravity="center_vertical"
+
+                        />
+                </LinearLayout>
+
+                <!-- QIII và Q3 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/qiiiLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="QIII"
+                        android:textColor="#000000"
+                        android:textSize="12sp"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginEnd="8dp" />
+
+                    <EditText
+                        android:id="@+id/qiiiInput"
+                        android:layout_width="0dp"
+                        android:layout_height="35dp"
+                        android:layout_weight="1"
+                        android:textSize="14sp"
+                        android:inputType="numberDecimal|numberSigned"
+                        android:singleLine="true"
+                        android:imeOptions="actionDone"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginEnd="8dp"
+                        />
+
+                    <TextView
+                        android:id="@+id/q3Label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Q3"
+                        android:textColor="#000000"
+                        android:textSize="12sp"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginEnd="8dp" />
+
+                    <EditText
+                    android:id="@+id/q3Input"
+                    android:layout_width="0dp"
+                    android:layout_height="35dp"
+                    android:layout_weight="1"
+                    android:textSize="14sp"
+                    android:inputType="numberDecimal|numberSigned"
+                    android:singleLine="true"
+                    android:imeOptions="actionDone"
+                    android:layout_gravity="center_vertical"
+                    />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- IP Input -->
+
+            <!-- Nút kết nối -->
+            <Button
+                android:id="@+id/connectButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:background="#87CEEB"
+                android:padding="8dp"
+                android:text="Kết nối"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp" />
+
+            <!-- Phiên bản -->
+            <TextView
+                android:id="@+id/versionText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Phiên bản: 1.0.0"
+                android:textColor="#000000"
+                android:textSize="12sp"
+                android:layout_gravity="center_horizontal" />
+        </LinearLayout>
+    </ScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>
