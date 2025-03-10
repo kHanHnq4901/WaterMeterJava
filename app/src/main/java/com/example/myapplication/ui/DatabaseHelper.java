@@ -8,7 +8,11 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import org.opencv.core.Core;
+
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
@@ -103,14 +107,51 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 @SuppressLint("Range") double ssDhmau = cursor.getDouble(cursor.getColumnIndex(COLUMN_SS_DHMAU));
                 @SuppressLint("Range") String timestamp = cursor.getString(cursor.getColumnIndex(COLUMN_TIMESTAMP));
 
+                // Kiểm tra serial có phải là số hợp lệ không và chuyển đổi
+                long serialNumber = 0;
+                if (serial != null) {
+                    try {
+                        serialNumber = Long.parseLong(serial);  // Chuyển serial thành số (Long)
+                    } catch (NumberFormatException e) {
+                        Log.e("DatabaseHelper", "Serial không hợp lệ: " + serial, e);
+                        // Xử lý trường hợp serial không hợp lệ tại đây
+                    }
+                }
+
+                // Thêm đối tượng SaveMessage vào danh sách
                 messages.add(new SaveMessage(serial, correction, tai, type, round, ratio, falseValue, ssDhmau, timestamp));
             }
+
+            // Sắp xếp danh sách theo serial từ nhỏ đến lớn (sử dụng giá trị serialNumber đã chuyển đổi)
+            Collections.sort(messages, new Comparator<SaveMessage>() {
+                @Override
+                public int compare(SaveMessage o1, SaveMessage o2) {
+                    long serial1 = 0;
+                    long serial2 = 0;
+                    // Chuyển đổi serial thành long để so sánh
+                    try {
+                        serial1 = Long.parseLong(o1.getSerial());
+                    } catch (NumberFormatException e) {
+                        Log.e("DatabaseHelper", "Serial không hợp lệ: " + o1.getSerial(), e);
+                    }
+                    try {
+                        serial2 = Long.parseLong(o2.getSerial());
+                    } catch (NumberFormatException e) {
+                        Log.e("DatabaseHelper", "Serial không hợp lệ: " + o2.getSerial(), e);
+                    }
+                    return Long.compare(serial1, serial2);  // So sánh serial từ nhỏ đến lớn
+                }
+            });
+
         } catch (Exception e) {
             Log.e("DatabaseHelper", "Query error: ", e);
         }
 
         return messages;
     }
+
+
+
 
     public void deleteAllSaveMessages() {
         try (SQLiteDatabase db = this.getWritableDatabase()) {

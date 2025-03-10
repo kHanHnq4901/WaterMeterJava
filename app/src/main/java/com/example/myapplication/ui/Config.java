@@ -1,6 +1,7 @@
 package com.example.myapplication.ui;
 
 public class Config {
+    private String stt = "";
     private String serial = "";
     private String staging = "1";
     private String errQI = "0";
@@ -22,7 +23,6 @@ public class Config {
     private double valueMau = 0;
     private double falseValueMeter = 0;
     private double ratio = 0;
-    private double flow = 0;
     private double correction = 0;
     private double previousAngle = 0; // Lưu góc quay trước đó
     private double totalRotation = 0; // Tổng góc quay (tính cả phần thập phân)
@@ -36,6 +36,15 @@ public class Config {
     public void setSaturation(int saturation){
         this.saturation = saturation;
     }
+
+    public String getStt() {
+        return stt;
+    }
+
+    public void setStt(String stt) {
+        this.stt = stt;
+    }
+
     public String getSerial() {
         return serial;
     }
@@ -153,13 +162,7 @@ public class Config {
         this.ratio = ratio;
     }
 
-    public double getFlow() {
-        return flow;
-    }
 
-    public void setFlow(double flow) {
-        this.flow = flow;
-    }
 
     public double getCorrection() {
         return correction;

@@ -89,49 +89,73 @@
         app:layout_constraintWidth_percent="0.95">
 
 
+        <!-- Nút "Bắt đầu" -->
         <Button
             android:id="@+id/buttonBatDau"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:layout_marginEnd="4dp"
+            android:layout_marginEnd="2dp"
             android:text="Bắt đầu"
             android:backgroundTint="@color/green"
             android:textColor="@color/white"
-            android:elevation="4dp" />
+            android:elevation="2dp" />
+
+        <!-- Nút "Kết thúc" -->
         <Button
             android:id="@+id/buttonKetThuc"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:layout_marginEnd="4dp"
+            android:layout_marginEnd="2dp"
             android:text="Kết thúc"
             android:backgroundTint="@color/red"
             android:textColor="@color/white"
-            android:elevation="4dp"
+            android:elevation="2dp"
             android:visibility="gone"
             />
+
+        <!-- Nút "Làm mới" -->
         <Button
             android:id="@+id/buttonLamMoi"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:layout_marginEnd="4dp"
+            android:layout_marginEnd="2dp"
             android:text="Làm mới"
             android:backgroundTint="@color/primary"
             android:textColor="@color/white"
-            android:elevation="4dp" />
+            android:elevation="2dp" />
 
+        <!-- Nút "Lưu" -->
         <Button
             android:id="@+id/buttonLuu"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:backgroundTint="@color/primary"
-            android:elevation="4dp"
-            android:text="Lưu"
-            android:textColor="@color/white" />
+            android:elevation="2dp"
+            android:text="Lưu kqua"
+            android:textColor="@color/white"
+            android:layout_marginEnd="2dp"/>
+
+        <!-- Nút "Lưu Excel" -->
+        <Button
+            android:id="@+id/buttonLuuExcel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="2dp"
+            android:text="Lưu Excel"
+            android:backgroundTint="@color/primary"
+            android:textColor="@color/white"
+            android:elevation="2dp" />
+
     </LinearLayout>
+
+
+
+
     <!-- SeekBar điều chỉnh độ bão hòa -->
     <SeekBar
         android:id="@+id/seekBarSaturation"
@@ -208,7 +232,7 @@
 
     <!-- LinearLayout chứa các TextView (Tiêu đề) -->
     <LinearLayout
-        android:id="@+id/linearLayoutTitles"
+        android:id="@+id/linearLayoutTitlesOld2"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -220,45 +244,45 @@
         app:layout_constraintWidth_percent="0.95">
 
         <TextView
-            android:id="@+id/textViewLuongNuoc"
+            android:id="@+id/textViewLuongNuocOld2"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Lượng nước cũ"
+            android:text="Lượng nước cũ 2"
             android:textSize="12dp"
             android:textAlignment="center"
             android:textStyle="bold"
             android:textColor="@color/black" />
 
         <TextView
-            android:id="@+id/textViewChenhLech"
+            android:id="@+id/textViewChenhLechOld2"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:textSize="12dp"
-            android:text="Chênh lệch cũ"
+            android:text="Chênh lệch cũ 2"
             android:textAlignment="center"
             android:textStyle="bold"
             android:textColor="@color/black" />
 
         <TextView
-            android:id="@+id/textViewTiLe"
+            android:id="@+id/textViewTiLeOld2"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:textSize="12dp"
-            android:text="Tỉ lệ cũ"
+            android:text="Tỉ lệ cũ 2"
             android:textAlignment="center"
             android:textStyle="bold"
             android:textColor="@color/black" />
 
         <TextView
-            android:id="@+id/textViewSaiSo1"
+            android:id="@+id/textViewSaiSoOld2"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:textSize="12dp"
-            android:text="Sai số cũ"
+            android:text="Sai số cũ 2"
             android:textAlignment="center"
             android:textStyle="bold"
             android:textColor="@color/black" />
@@ -271,13 +295,13 @@
         android:orientation="horizontal"
         android:layout_marginTop="4dp"
         android:elevation="4dp"
-        app:layout_constraintTop_toBottomOf="@id/linearLayoutTitles"
+        app:layout_constraintTop_toBottomOf="@id/linearLayoutTitlesOld2"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintWidth_percent="0.95">
 
         <TextView
-            android:id="@+id/textViewLuongNuocValue"
+            android:id="@+id/textViewLuongNuocValueOld2"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -286,7 +310,7 @@
             android:textColor="@color/green" />
 
         <TextView
-            android:id="@+id/textViewChenhLechValue"
+            android:id="@+id/textViewChenhLechValueOld2"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -295,7 +319,7 @@
             android:textColor="@color/green" />
 
         <TextView
-            android:id="@+id/textViewTiLeValue"
+            android:id="@+id/textViewTiLeValueOld2"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -304,7 +328,7 @@
             android:textColor="@color/green" />
 
         <TextView
-            android:id="@+id/textViewSaiSoValue"
+            android:id="@+id/textViewSaiSoValueOld2"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -312,7 +336,112 @@
             android:textAlignment="center"
             android:textColor="@color/green" />
     </LinearLayout>
+    <!-- LinearLayout chứa các TextView (Tiêu đề mới) -->
+    <LinearLayout
+        android:id="@+id/linearLayoutTitlesOld1"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="25dp"
+        android:elevation="4dp"
+        app:layout_constraintTop_toBottomOf="@id/linearLayoutTitlesOld2"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintWidth_percent="0.95">
 
+        <TextView
+            android:id="@+id/textViewLuongNuocOld1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="12dp"
+            android:text="Lượng nước mới"
+            android:textAlignment="center"
+            android:textStyle="bold"
+            android:textColor="@color/black" />
+
+        <TextView
+            android:id="@+id/textViewChenhLechOld1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="12dp"
+            android:text="Chênh lệch mới"
+            android:textAlignment="center"
+            android:textStyle="bold"
+            android:textColor="@color/black" />
+
+        <TextView
+            android:id="@+id/textViewTiLeOld1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="12dp"
+            android:text="Tỉ lệ mới"
+            android:textAlignment="center"
+            android:textStyle="bold"
+            android:textColor="@color/black" />
+
+        <TextView
+            android:id="@+id/textViewSaiSoOld1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="12dp"
+            android:text="Sai số mới"
+            android:textAlignment="center"
+            android:textStyle="bold"
+            android:textColor="@color/black" />
+    </LinearLayout>
+
+    <!-- LinearLayout chứa các TextView (Giá trị mới) -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="8dp"
+        android:elevation="4dp"
+        app:layout_constraintTop_toBottomOf="@id/linearLayoutTitlesOld1"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintWidth_percent="0.95">
+
+        <TextView
+            android:id="@+id/textViewLuongNuocValueOld1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="0"
+            android:textAlignment="center"
+            android:textColor="@color/green" />
+
+        <TextView
+            android:id="@+id/textViewChenhLechValueOld1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="0"
+            android:textAlignment="center"
+            android:textColor="@color/green" />
+
+        <TextView
+            android:id="@+id/textViewTiLeValueOld1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="0"
+            android:textAlignment="center"
+            android:textColor="@color/green" />
+
+        <TextView
+            android:id="@+id/textViewSaiSoValueOld1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="0"
+            android:textAlignment="center"
+            android:textColor="@color/green" />
+    </LinearLayout>
     <!-- LinearLayout chứa các TextView (Tiêu đề mới) -->
     <LinearLayout
         android:id="@+id/linearLayoutTitlesNew"
@@ -321,7 +450,7 @@
         android:orientation="horizontal"
         android:layout_marginTop="25dp"
         android:elevation="4dp"
-        app:layout_constraintTop_toBottomOf="@id/linearLayoutTitles"
+        app:layout_constraintTop_toBottomOf="@id/linearLayoutTitlesOld1"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintWidth_percent="0.95">

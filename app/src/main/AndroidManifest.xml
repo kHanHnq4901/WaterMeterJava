@@ -2,10 +2,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Đảm bảo không yêu cầu Camera nếu không cần thiết -->
     <uses-feature
         android:name="android.hardware.camera"
         android:required="false" />
 
+    <!-- Quyền sử dụng internet, camera, bộ nhớ -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
@@ -38,7 +40,7 @@
             </intent-filter>
         </activity>
 
-        <!-- ✅ Thêm FileProvider -->
+        <!-- ✅ Thêm FileProvider để truy xuất tệp ngoài -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider"

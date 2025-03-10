@@ -1,6 +1,7 @@
 package com.example.myapplication.ui.dashboard;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -18,6 +19,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.OptIn;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.camera.core.Camera;
 import androidx.camera.core.CameraControl;
 import androidx.camera.core.ExperimentalGetImage;
@@ -63,6 +65,7 @@ public class DashboardFragment extends HomeFragment {
     protected com.example.myapplication.ui.Mqtt mqtt;
     private static Config config;
     private SharedPreferences sharedPreferences;
+
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         binding = FragmentDashboardBinding.inflate(inflater, container, false);
@@ -72,24 +75,59 @@ public class DashboardFragment extends HomeFragment {
         setupRadioButtons();
         setupSeekBar();
         setupUIVisibility();
-
+        Context context = requireContext();
         // Button Setup
-        setupButtonWithDelay(binding.buttonLamMoi, () -> {
-            resetValues();
-            mqtt.sendMQTTCommand(mqtt,"COMMAND=3");
+        // Nút "Làm Mới"
+        binding.buttonLamMoi.setOnClickListener(v -> {
+            // Tạo AlertDialog để hỏi người dùng có chắc chắn muốn làm mới không
+            new AlertDialog.Builder(context)
+                    .setTitle("Xác nhận")
+                    .setMessage("Bạn có chắc chắn muốn làm mới không? Tất cả dữ liệu sẽ bị reset.")
+                    .setPositiveButton("Có", (dialog, which) -> {
+                        // Nếu người dùng chọn "Có", thực hiện làm mới và gửi lệnh MQTT
+                        resetValues();
+                        mqtt.sendMQTTCommand(mqtt, "COMMAND=3");
+                    })
+                    .setNegativeButton("Không", (dialog, which) -> {
+                        // Nếu người dùng chọn "Không", không làm gì cả
+                        dialog.dismiss();
+                    })
+                    .show();
         });
 
-        setupButtonWithDelay(binding.buttonLuu, () -> {
-            saveCurrentConfig();
-            mqtt.sendMQTTCommand(mqtt,"COMMAND=4");
+        // Nút "Lưu"
+        binding.buttonLuu.setOnClickListener(v -> {
+            // Tạo AlertDialog để hỏi người dùng có chắc chắn muốn lưu không
+            new AlertDialog.Builder(context)
+                    .setTitle("Xác nhận")
+                    .setMessage("Bạn có chắc chắn muốn lưu không?")
+                    .setPositiveButton("Có", (dialog, which) -> {
+                        // Nếu người dùng chọn "Có", thực hiện lưu và gửi lệnh MQTT
+                        saveCurrentConfig();
+                        mqtt.sendMQTTCommand(mqtt, "COMMAND=4");
+                    })
+                    .setNegativeButton("Không", (dialog, which) -> {
+                        // Nếu người dùng chọn "Không", không làm gì cả
+                        dialog.dismiss();
+                    })
+                    .show();
         });
+
 
         Button buttonBatDau = binding.buttonBatDau;
         Button buttonKetThuc = binding.buttonKetThuc;
         updateStartStopButtonVisibility(buttonBatDau, buttonKetThuc);
 
-        setupButtonWithDelay(buttonBatDau, () -> toggleStartButton(buttonBatDau, buttonKetThuc));
-        setupButtonWithDelay(buttonKetThuc, () -> toggleEndButton(buttonBatDau, buttonKetThuc));
+        // Nút "Bắt Đầu"
+        binding.buttonBatDau.setOnClickListener(v -> {
+            toggleStartButton(binding.buttonBatDau, binding.buttonKetThuc);
+        });
+
+        // Nút "Kết Thúc"
+        binding.buttonKetThuc.setOnClickListener(v -> {
+            toggleEndButton(binding.buttonBatDau, binding.buttonKetThuc);
+        });
+
 
         startCamera();
         return root;
@@ -186,17 +224,7 @@ public class DashboardFragment extends HomeFragment {
         Log.d("RadioGroup", tai + " selected");
     }
 
-    private void setupButtonWithDelay(Button button, Runnable action) {
-        button.setOnClickListener(v -> {
-            button.setEnabled(false);
-            button.setAlpha(0.5f);
-            action.run();
-            button.postDelayed(() -> {
-                button.setEnabled(true);
-                button.setAlpha(1.0f);
-            }, 5000); // 5 seconds
-        });
-    }
+
 
     private void updateStartStopButtonVisibility(Button buttonBatDau, Button buttonKetThuc) {
         if (config.getIsStart()) {
@@ -224,7 +252,7 @@ public class DashboardFragment extends HomeFragment {
         config.setRound(0);
 
         // Cập nhật giao diện người dùng
-        TextView textView6 = binding.textViewLuongNuocValue;
+        TextView textView6 = binding.textViewLuongNuocValueOld2;
         textView6.setText(String.valueOf(config.getRound()));
     }
 
@@ -286,9 +314,9 @@ public class DashboardFragment extends HomeFragment {
     Mat dst = new Mat();
     Mat mask1 = new Mat();
     Mat mask2 = new Mat();
-    Scalar lowRed = new Scalar(0,50,1);
+    Scalar lowRed = new Scalar(0,50,20);
     Scalar highRed = new Scalar(10, 255, 255);
-    Scalar lowRed1 = new Scalar(150, 50, 1);
+    Scalar lowRed1 = new Scalar(150, 50, 20);
     Scalar highRed1 = new Scalar(180, 255, 255);
 
     @OptIn(markerClass = ExperimentalGetImage.class)
@@ -416,18 +444,37 @@ public class DashboardFragment extends HomeFragment {
 
                         String serial = "Serial: " + config.getSerial();
                         String dan = "Dan: " + config.getStaging();
+                        String stt = "Stt: " + config.getStt();
                         String loai = "Loai: " + (config.getType().equals("Kiểm") ? "Kiem" : "Mau");
-                        @SuppressLint("DefaultLocale") String luong = String.format("Luu luong: %.3f m3", config.getFlow());
                         String tai = "Tai: " + config.getTai();
                         String saiso = "Sai So dh Mau: "+ config.getSsDhm();
 
-                        Imgproc.putText(matRGB, serial, new Point(10, 100), Imgproc.FONT_HERSHEY_SIMPLEX, 0.4, new Scalar(0, 255, 0), 1);
-                        Imgproc.putText(matRGB, dan, new Point(10, 115), Imgproc.FONT_HERSHEY_SIMPLEX, 0.4, new Scalar(0, 255, 0), 1);
-                        Imgproc.putText(matRGB, loai, new Point(10, 130), Imgproc.FONT_HERSHEY_SIMPLEX, 0.4, new Scalar(0, 255, 0), 1);
-                        Imgproc.putText(matRGB, luong, new Point(10, 145), Imgproc.FONT_HERSHEY_SIMPLEX, 0.4, new Scalar(0, 255, 0), 1);
-                        Imgproc.putText(matRGB, tai, new Point(10, 160), Imgproc.FONT_HERSHEY_SIMPLEX, 0.4, new Scalar(0, 255, 0), 1);
-                        Imgproc.putText(matRGB, saiso, new Point(10, 175), Imgproc.FONT_HERSHEY_SIMPLEX, 0.4, new Scalar(0, 255, 0), 1);
+                        // Định nghĩa các điểm và thông số vẽ
+                        Point pointSerial = new Point(10, 100);
+                        Point pointStt = new Point(10, 115);
+                        Point pointDan = new Point(10, 130);
+                        Point pointLoai = new Point(10, 145);
+                        Point pointTai = new Point(10, 160);
+                        Point pointSaiso = new Point(10, 175);
 
+                        Scalar whiteColor = new Scalar(255, 255, 255);  // Màu trắng cho nền
+                        Scalar blackColor = new Scalar(0, 0, 0);        // Màu đen cho chữ
+
+                        // Vẽ nền trắng (hình chữ nhật)
+                        Imgproc.rectangle(matRGB, new Point(5, 90), new Point(300, 110), whiteColor, -1); // serial
+                        Imgproc.rectangle(matRGB, new Point(5, 110), new Point(300, 125), whiteColor, -1); // serial
+                        Imgproc.rectangle(matRGB, new Point(5, 125), new Point(300, 140), whiteColor, -1); // dan
+                        Imgproc.rectangle(matRGB, new Point(5, 140), new Point(300, 155), whiteColor, -1); // loai
+                        Imgproc.rectangle(matRGB, new Point(5, 145), new Point(300, 170), whiteColor, -1); // tai
+                        Imgproc.rectangle(matRGB, new Point(5, 170), new Point(300, 185), whiteColor, -1); // saiso
+
+                            // Vẽ chữ màu đen lên nền trắng
+                        Imgproc.putText(matRGB, serial, pointSerial, Imgproc.FONT_HERSHEY_SIMPLEX, 0.4, blackColor, 1);
+                        Imgproc.putText(matRGB, stt, pointStt, Imgproc.FONT_HERSHEY_SIMPLEX, 0.4, blackColor, 1);
+                        Imgproc.putText(matRGB, dan, pointDan, Imgproc.FONT_HERSHEY_SIMPLEX, 0.4, blackColor, 1);
+                        Imgproc.putText(matRGB, loai, pointLoai, Imgproc.FONT_HERSHEY_SIMPLEX, 0.4, blackColor, 1);
+                        Imgproc.putText(matRGB, tai, pointTai, Imgproc.FONT_HERSHEY_SIMPLEX, 0.4, blackColor, 1);
+                        Imgproc.putText(matRGB, saiso, pointSaiso, Imgproc.FONT_HERSHEY_SIMPLEX, 0.4, blackColor, 1);
                         displayProcessedImage(matRGB);
                     } catch (Exception e) {
                         Log.e("ImageAnalysis", "Error processing image", e);
@@ -481,12 +528,7 @@ public class DashboardFragment extends HomeFragment {
         double round = config.getTotalRotation() / 360;
         config.setRound(round);
 
-        // Cập nhật giá trị round và thời gian vào hàng đợi
-        updateRecentRoundValues(round, currentTimeMillis);
 
-        // Tính lưu lượng ngay cả khi không ổn định
-        double averageFlow = calculateFlow(recentRoundValues, timestamps); // Tính lưu lượng từ tất cả các vòng quay gần nhất
-        config.setFlow(averageFlow); // Cập nhật lưu lượng
 
         // Kiểm tra sự ổn định của số vòng quay và tính giá trị trung bình nếu ổn định
         if (isStable()) {
@@ -496,16 +538,6 @@ public class DashboardFragment extends HomeFragment {
         }
     }
 
-    // Hàm cập nhật giá trị round và thời gian vào hàng đợi
-    private void updateRecentRoundValues(double value, long timestamp) {
-        if (recentRoundValues.size() == MAX_SIZE) {
-            recentRoundValues.poll(); // Loại bỏ giá trị cũ nhất nếu hàng đợi đầy
-            timestamps.poll(); // Loại bỏ thời gian cũ nhất nếu hàng đợi đầy
-        }
-        // Lưu giá trị round vào hàng đợi
-        recentRoundValues.offer(value);
-        timestamps.offer(timestamp); // Lưu thời gian vào hàng đợi
-    }
 
     // Hàm kiểm tra sự ổn định của giá trị round (ngưỡng thay đổi)
     private boolean isStable() {
@@ -567,10 +599,10 @@ public class DashboardFragment extends HomeFragment {
     private void updateUIWithMQTT() {
         DecimalFormat decimalFormat = new DecimalFormat("#.##");
         int textColorOld = (config.getCorrectionOld() < -1 || config.getCorrectionOld() > 1) ? Color.RED : Color.GREEN;
-        TextView textViewLuongNuocOld = binding.textViewLuongNuocValue;
-        TextView textViewChenhLechOld = binding.textViewChenhLechValue;
-        TextView textViewTiLeOld = binding.textViewTiLeValue;
-        TextView textViewSaiSoOld = binding.textViewSaiSoValue;
+        TextView textViewLuongNuocOld = binding.textViewLuongNuocValueOld2;
+        TextView textViewChenhLechOld = binding.textViewChenhLechValueOld2;
+        TextView textViewTiLeOld = binding.textViewTiLeValueOld2;
+        TextView textViewSaiSoOld = binding.textViewSaiSoValueOld2;
         textViewLuongNuocOld.setText(decimalFormat.format(config.getRoundOld())+ " Lít");
         textViewChenhLechOld.setText(decimalFormat.format(config.getFalseValueMeterOld())+ " Lít");
         textViewTiLeOld.setText(decimalFormat.format(config.getRatioOld()) + " %");
