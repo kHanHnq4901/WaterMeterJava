@@ -1,5 +1,5 @@
 {
-  "installationFolder": "/Users/khanhnguyen/Documents/WaterMeterJava/openCV/build/intermediates/prefab_package/release/prefab",
+  "installationFolder": "D:\\WaterMeterJava\\openCV\\build\\intermediates\\prefab_package\\release\\prefab",
   "gradlePath": ":openCV",
   "packageInfo": {
     "packageName": "openCV",
@@ -8,7 +8,7 @@
     "modules": [
       {
         "moduleName": "opencv_jni_shared",
-        "moduleHeaders": "/Users/khanhnguyen/Documents/WaterMeterJava/openCV/native/jni/include",
+        "moduleHeaders": "D:\\WaterMeterJava\\openCV\\native\\jni\\include",
         "moduleExportLibraries": [],
         "abis": []
       }

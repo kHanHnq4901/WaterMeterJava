@@ -1,0 +1,2 @@
+ninja: Entering directory `D:\WaterMeterJava\openCV\.cxx\Debug\m6oh5006\x86_64'
+ninja: no work to do.

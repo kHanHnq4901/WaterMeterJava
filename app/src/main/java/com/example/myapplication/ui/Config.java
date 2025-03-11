@@ -12,11 +12,14 @@ public class Config {
     private String tai = "QIII";
     private String ssDhm = "0";
     private int saturation = 50 ;
-    private double roundOld = 0;
-    private double falseValueMeterOld = 0;
-    private double ratioOld = 0;
-    private double correctionOld = 0;
-
+    private double roundOld1 = 0;
+    private double falseValueMeterOld1 = 0;
+    private double ratioOld1 = 0;
+    private double correctionOld1 = 0;
+    private double roundOld2 = 0;
+    private double falseValueMeterOld2 = 0;
+    private double ratioOld2 = 0;
+    private double correctionOld2 = 0;
     private double round = 0;
     private boolean isConnect = false;
     private boolean isStart = false;
@@ -221,35 +224,67 @@ public class Config {
         this.angelStart = angelStart;
     }
 
-    public double getRoundOld() {
-        return roundOld;
+    public double getRoundOld1() {
+        return roundOld1;
     }
 
-    public void setRoundOld(double roundOld) {
-        this.roundOld = roundOld;
+    public void setRoundOld1(double roundOld1) {
+        this.roundOld1 = roundOld1;
     }
 
-    public double getFalseValueMeterOld() {
-        return falseValueMeterOld;
+    public double getFalseValueMeterOld1() {
+        return falseValueMeterOld1;
     }
 
-    public void setFalseValueMeterOld(double falseValueMeterOld) {
-        this.falseValueMeterOld = falseValueMeterOld;
+    public void setFalseValueMeterOld1(double falseValueMeterOld1) {
+        this.falseValueMeterOld1 = falseValueMeterOld1;
     }
 
-    public double getRatioOld() {
-        return ratioOld;
+    public double getRatioOld1() {
+        return ratioOld1;
     }
 
-    public void setRatioOld(double ratioOld) {
-        this.ratioOld = ratioOld;
+    public void setRatioOld1(double ratioOld1) {
+        this.ratioOld1 = ratioOld1;
     }
 
-    public double getCorrectionOld() {
-        return correctionOld;
+    public double getCorrectionOld1() {
+        return correctionOld1;
     }
 
-    public void setCorrectionOld(double correctionOld) {
-        this.correctionOld = correctionOld;
+    public void setCorrectionOld1(double correctionOld1) {
+        this.correctionOld1 = correctionOld1;
+    }
+
+    public double getRoundOld2() {
+        return roundOld2;
+    }
+
+    public void setRoundOld2(double roundOld2) {
+        this.roundOld2 = roundOld2;
+    }
+
+    public double getFalseValueMeterOld2() {
+        return falseValueMeterOld2;
+    }
+
+    public void setFalseValueMeterOld2(double falseValueMeterOld2) {
+        this.falseValueMeterOld2 = falseValueMeterOld2;
+    }
+
+    public double getRatioOld2() {
+        return ratioOld2;
+    }
+
+    public void setRatioOld2(double ratioOld2) {
+        this.ratioOld2 = ratioOld2;
+    }
+
+    public double getCorrectionOld2() {
+        return correctionOld2;
+    }
+
+    public void setCorrectionOld2(double correctionOld2) {
+        this.correctionOld2 = correctionOld2;
     }
 }

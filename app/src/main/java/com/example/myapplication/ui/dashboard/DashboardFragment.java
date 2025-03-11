@@ -68,6 +68,7 @@ public class DashboardFragment extends HomeFragment {
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
         binding = FragmentDashboardBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
         config = ConfigManager.getConfig();
@@ -105,6 +106,22 @@ public class DashboardFragment extends HomeFragment {
                         // Nếu người dùng chọn "Có", thực hiện lưu và gửi lệnh MQTT
                         saveCurrentConfig();
                         mqtt.sendMQTTCommand(mqtt, "COMMAND=4");
+                    })
+                    .setNegativeButton("Không", (dialog, which) -> {
+                        // Nếu người dùng chọn "Không", không làm gì cả
+                        dialog.dismiss();
+                    })
+                    .show();
+        });
+        binding.buttonLuuExcel.setOnClickListener(v -> {
+            // Tạo AlertDialog để hỏi người dùng có chắc chắn muốn lưu không
+            new AlertDialog.Builder(context)
+                    .setTitle("Xác nhận")
+                    .setMessage("Bạn có chắc chắn muốn lưu excel không?")
+                    .setPositiveButton("Có", (dialog, which) -> {
+                        // Nếu người dùng chọn "Có", thực hiện lưu và gửi lệnh MQTT
+                        saveCurrentConfig();
+                        mqtt.sendMQTTCommand(mqtt, "COMMAND=5");
                     })
                     .setNegativeButton("Không", (dialog, which) -> {
                         // Nếu người dùng chọn "Không", không làm gì cả
@@ -200,10 +217,15 @@ public class DashboardFragment extends HomeFragment {
     }
 
     private void saveCurrentConfig() {
-        config.setRoundOld(config.getRound());
-        config.setFalseValueMeterOld(config.getFalseValueMeter());
-        config.setRatioOld(config.getRatio());
-        config.setCorrectionOld(config.getCorrection());
+        config.setRoundOld1(config.getRound());
+        config.setFalseValueMeterOld1(config.getFalseValueMeter());
+        config.setRatioOld1(config.getRatio());
+        config.setCorrectionOld1(config.getCorrection());
+
+        config.setRoundOld2(config.getRoundOld1());
+        config.setFalseValueMeterOld2(config.getFalseValueMeterOld1());
+        config.setRatioOld2(config.getRatioOld1());
+        config.setCorrectionOld2(config.getCorrectionOld1());
     }
 
     private String getErrValue(String tai) {
@@ -598,19 +620,52 @@ public class DashboardFragment extends HomeFragment {
     @SuppressLint("SetTextI18n")
     private void updateUIWithMQTT() {
         DecimalFormat decimalFormat = new DecimalFormat("#.##");
-        int textColorOld = (config.getCorrectionOld() < -1 || config.getCorrectionOld() > 1) ? Color.RED : Color.GREEN;
-        TextView textViewLuongNuocOld = binding.textViewLuongNuocValueOld2;
-        TextView textViewChenhLechOld = binding.textViewChenhLechValueOld2;
-        TextView textViewTiLeOld = binding.textViewTiLeValueOld2;
-        TextView textViewSaiSoOld = binding.textViewSaiSoValueOld2;
-        textViewLuongNuocOld.setText(decimalFormat.format(config.getRoundOld())+ " Lít");
-        textViewChenhLechOld.setText(decimalFormat.format(config.getFalseValueMeterOld())+ " Lít");
-        textViewTiLeOld.setText(decimalFormat.format(config.getRatioOld()) + " %");
-        textViewSaiSoOld.setText(decimalFormat.format(config.getCorrectionOld())+ " %");
+        int textColorOld1 = (config.getCorrectionOld1() < -1.5 || config.getCorrectionOld1() > 1.5) ? Color.RED : Color.GREEN;
+        int textColorOld2 = (config.getCorrectionOld2() < -1.5 || config.getCorrectionOld2() > 1.5) ? Color.RED : Color.GREEN;
 
-        textViewChenhLechOld.setTextColor(textColorOld);
-        textViewTiLeOld.setTextColor(textColorOld);
-        textViewSaiSoOld.setTextColor(textColorOld);
+        TextView textViewLuongNuocOld1 = binding.textViewLuongNuocValueOld1;
+        TextView textViewChenhLechOld1 = binding.textViewChenhLechValueOld1;
+        TextView textViewSaiSoOld1 = binding.textViewSaiSoValueOld1;
+        TextView textViewLuongNuocOld2 = binding.textViewLuongNuocValueOld2;
+        TextView textViewChenhLechOld2 = binding.textViewChenhLechValueOld2;
+        TextView textViewSaiSoOld2 = binding.textViewSaiSoValueOld2;
+        textViewLuongNuocOld1.setText(decimalFormat.format(config.getRoundOld1())+ " Lít");
+        textViewChenhLechOld1.setText(decimalFormat.format(config.getFalseValueMeterOld1())+ " Lít");
+        textViewSaiSoOld1.setText(decimalFormat.format(config.getCorrectionOld1())+ " %");
+        textViewLuongNuocOld2.setText(decimalFormat.format(config.getRoundOld2())+ " Lít");
+        textViewChenhLechOld2.setText(decimalFormat.format(config.getFalseValueMeterOld2())+ " Lít");
+        textViewSaiSoOld2.setText(decimalFormat.format(config.getCorrectionOld2())+ " %");
+        textViewChenhLechOld1.setTextColor(textColorOld1);
+        textViewSaiSoOld1.setTextColor(textColorOld1);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        textViewChenhLechOld2.setTextColor(textColorOld2);
+        textViewSaiSoOld2.setTextColor(textColorOld2);
         if (config.getIsStart()) {
             TextView textView6 = binding.textViewLuongNuocValueNew;
             textView6.setText(decimalFormat.format(config.getRound())+ " Lít");
@@ -621,7 +676,6 @@ public class DashboardFragment extends HomeFragment {
 
         if (config.getIsStart()) {
             TextView textView7 = binding.textViewChenhLechValueNew;
-            TextView textView8 = binding.textViewTiLeValueNew;
             TextView textView9 = binding.textViewSaiSoValueNew;
 
             // Tính toán
@@ -633,14 +687,13 @@ public class DashboardFragment extends HomeFragment {
             config.setRatio(ratioValue);
             config.setCorrection(correction);
 
-            int textColor = (correction < -1 || correction > 1) ? Color.RED : Color.GREEN;
+            int textColor = (correction < -1.5 || correction > 1.5) ? Color.RED : Color.GREEN;
 
             textView7.setText(decimalFormat.format(config.getFalseValueMeter())+ " Lít");
-            textView8.setText(decimalFormat.format(ratioValue) + "%");
             textView9.setText(decimalFormat.format(correction) + "%");
 
             textView7.setTextColor(textColor);
-            textView8.setTextColor(textColor);
+
             textView9.setTextColor(textColor);
         }
     }

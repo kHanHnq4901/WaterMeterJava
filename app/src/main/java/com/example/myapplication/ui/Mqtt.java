@@ -285,6 +285,10 @@ public class Mqtt {
                             runOnUiThread(() -> Toast.makeText(context, "Đang lưu", Toast.LENGTH_LONG).show());
                             handleSave();
                             break;
+                        case 5:
+                            runOnUiThread(() -> Toast.makeText(context, "Đang lưu", Toast.LENGTH_LONG).show());
+                            handleSaveExcel();
+                            break;
                         default:
                             System.out.println("Unknown command: " + command);
                             break;
@@ -311,6 +315,14 @@ public class Mqtt {
                     try {
                         System.out.println("Received SAVE value: ");
 
+                    } catch (Exception e) {
+                        System.err.println("Error in handleSave: " + e.getMessage());
+                    }
+                }
+                private void handleSaveExcel() {
+                    try {
+                        System.out.println("Received SAVE value: ");
+
                         // Lấy thời gian hiện tại
                         String currentTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date());
 
@@ -323,10 +335,15 @@ public class Mqtt {
                             System.err.println("Config is null, cannot proceed with handleSave.");
                             return;
                         }
-                        config.setRoundOld(config.getRound());
-                        config.setFalseValueMeterOld(config.getFalseValueMeter());
-                        config.setRatioOld(config.getRatio());
-                        config.setCorrectionOld(config.getCorrection());
+                        config.setRoundOld1(config.getRound());
+                        config.setFalseValueMeterOld1(config.getFalseValueMeter());
+                        config.setRatioOld1(config.getRatio());
+                        config.setCorrectionOld1(config.getCorrection());
+
+                        config.setRoundOld2(config.getRoundOld1());
+                        config.setFalseValueMeterOld2(config.getFalseValueMeterOld1());
+                        config.setRatioOld2(config.getRatioOld1());
+                        config.setCorrectionOld2(config.getCorrectionOld1());
                         // Tạo payload
                         String payload = String.format("SAVE|%s|%s|%s|%s|%s|%s|%s|%s|%s",
                                 safeString(config.getSerial()),
