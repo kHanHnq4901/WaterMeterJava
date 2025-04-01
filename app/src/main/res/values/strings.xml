@@ -3,4 +3,5 @@
     <string name="title_home">Cài đặt</string>
     <string name="title_dashboard">Kiểm sai số</string>
     <string name="title_notifications">Lịch sử</string>
+    <string name="title_login">Đăng nhập</string>
 </resources>

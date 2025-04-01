@@ -3,16 +3,15 @@ plugins {
 }
 
 android {
-    namespace = "com.example.myapplication"
+    namespace = "com.emic.watermeter"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.myapplication"
+        applicationId = "com.emic.watermeter"
         minSdk = 26
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
-
+        versionCode = 18
+        versionName = "2.6.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -39,7 +38,7 @@ dependencies {
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.constraintlayout)
-
+    implementation(libs.app.update)
     // Lifecycle and ViewModel
     implementation(libs.lifecycle.livedata.ktx)
     implementation(libs.lifecycle.viewmodel.ktx)

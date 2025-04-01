@@ -2,19 +2,16 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Đảm bảo không yêu cầu Camera nếu không cần thiết -->
+    <!-- Không bắt buộc sử dụng camera nếu không cần -->
     <uses-feature
         android:name="android.hardware.camera"
         android:required="false" />
 
-    <!-- Quyền sử dụng internet, camera, bộ nhớ -->
+    <!-- Cấp quyền truy cập Internet, Camera, Bộ nhớ -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -25,9 +22,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MyApplication"
-        android:requestLegacyExternalStorage="true"
-        android:exported="true"
         tools:targetApi="31">
+
 
         <activity
             android:name=".MainActivity"
@@ -40,7 +36,6 @@
             </intent-filter>
         </activity>
 
-        <!-- ✅ Thêm FileProvider để truy xuất tệp ngoài -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider"

@@ -1,5 +1,6 @@
 [versions]
-agp = "8.9.0"
+agp = "8.6.0"
+appUpdate = "2.1.0"
 cameraCore = "1.4.1"
 datastorePreferences = "1.1.2"
 gson = "2.10.1"
@@ -26,6 +27,7 @@ staxApi = "1.0"
 workRuntimeKtx = "2.10.0"
 
 [libraries]
+app-update = { module = "com.google.android.play:app-update", version.ref = "appUpdate" }
 camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "cameraCore" }
 camera-core = { module = "androidx.camera:camera-core", version.ref = "cameraCore" }
 camera-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "cameraCore" }
