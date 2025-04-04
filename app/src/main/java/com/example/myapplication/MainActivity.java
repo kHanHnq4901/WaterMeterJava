@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
 
+import com.emic.watermeter.R;
 import com.example.myapplication.ui.Config;
 import com.example.myapplication.ui.ConfigManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -19,7 +20,7 @@ import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
-import com.example.myapplication.databinding.ActivityMainBinding;
+import com.emic.watermeter.databinding.ActivityMainBinding;
 import org.opencv.android.OpenCVLoader;
 
 public class MainActivity extends AppCompatActivity {

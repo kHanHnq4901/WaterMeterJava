@@ -27,8 +27,8 @@ import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.ImageProxy;
 import androidx.core.content.ContextCompat;
 
-import com.example.myapplication.R;
-import com.example.myapplication.databinding.FragmentDashboardBinding;
+import com.emic.watermeter.R;
+import com.emic.watermeter.databinding.FragmentDashboardBinding;
 
 import androidx.camera.core.CameraSelector;
 import androidx.camera.lifecycle.ProcessCameraProvider;
@@ -376,7 +376,7 @@ public class DashboardFragment extends HomeFragment {
                         for (MatOfPoint c : contours) {
                             double contourArea = Imgproc.contourArea(c);
 
-                            if (contourArea > 3000) {
+                            if (contourArea > 3000 && contourArea < 50000) {
                                 MatOfInt hull = new MatOfInt();
                                 Imgproc.convexHull(c, hull);
                                 List<Point> hullPoints = new ArrayList<>();
@@ -637,33 +637,6 @@ public class DashboardFragment extends HomeFragment {
         textViewSaiSoOld2.setText(decimalFormat.format(config.getCorrectionOld2())+ " %");
         textViewChenhLechOld1.setTextColor(textColorOld1);
         textViewSaiSoOld1.setTextColor(textColorOld1);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         textViewChenhLechOld2.setTextColor(textColorOld2);
         textViewSaiSoOld2.setTextColor(textColorOld2);
         if (config.getIsStart()) {

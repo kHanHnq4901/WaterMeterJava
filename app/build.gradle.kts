@@ -10,8 +10,8 @@ android {
         applicationId = "com.emic.watermeter"
         minSdk = 26
         targetSdk = 34
-        versionCode = 18
-        versionName = "2.6.0"
+        versionCode = 19
+        versionName = "2.6.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 

@@ -25,8 +25,8 @@ import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 
 
-import com.example.myapplication.R;
-import com.example.myapplication.databinding.FragmentNotificationsBinding;
+import com.emic.watermeter.R;
+import com.emic.watermeter.databinding.FragmentNotificationsBinding;
 import com.example.myapplication.ui.DatabaseHelper;
 import com.example.myapplication.ui.SaveMessage;
 

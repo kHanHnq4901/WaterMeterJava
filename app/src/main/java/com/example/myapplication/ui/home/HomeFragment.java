@@ -17,8 +17,8 @@ import android.widget.RadioButton;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
-import com.example.myapplication.R;
-import com.example.myapplication.databinding.FragmentHomeBinding;
+import com.emic.watermeter.R;
+import com.emic.watermeter.databinding.FragmentHomeBinding;
 import com.example.myapplication.ui.Config;
 import com.example.myapplication.ui.ConfigManager;
 import com.example.myapplication.ui.Mqtt;
