@@ -1,4 +1,0 @@
-/Users/khanhnguyen/Library/Android/sdk/cmake/3.22.1/bin/ninja \
-  -C \
-  /Users/khanhnguyen/Documents/WaterMeterJava/openCV/.cxx/RelWithDebInfo/5i42145g/x86 \
-  opencv_jni_shared

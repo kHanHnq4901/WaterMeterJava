@@ -255,7 +255,7 @@ public class NotificationsFragment extends Fragment {
 
             // Tạo tiêu đề cột
             Row headerRow = sheet.createRow(0);
-            String[] columns = {"Serial", "Sai số", "Tải", "Loại", "Lượng nước", "Tỉ lệ", "Sai lệch", "Sai số dhMau", "Thời gian"};
+            String[] columns = {"Serial", "Sai số", "Tải", "Loại", "V đo", "Tỉ lệ", "Sai lệch", "V chuẩn", "Thời gian"};
             for (int i = 0; i < columns.length; i++) {
                 Cell cell = headerRow.createCell(i);
                 cell.setCellValue(columns[i]);

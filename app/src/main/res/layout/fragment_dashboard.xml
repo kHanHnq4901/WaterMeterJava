@@ -93,17 +93,12 @@
                 android:id="@+id/textSaiSo"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Sai số dhm:"
+                android:text="V chuẩn:"
                 android:textSize="12sp"
                 android:textColor="@color/black"/>
         </LinearLayout>
 
     </LinearLayout>
-
-
-
-
-
 
     <!-- ImageView nằm dưới LinearLayout -->
     <ImageView
@@ -353,7 +348,7 @@
                     android:layout_width="0dp"
                     android:layout_weight="1"
                     android:background="@drawable/border_cell"
-                    android:text="Lượng nước"
+                    android:text="V đo"
                     android:textStyle="bold"
                     android:padding="5dp"
                     android:textSize="16sp"

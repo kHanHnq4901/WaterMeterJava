@@ -68,7 +68,6 @@ public class DashboardFragment extends HomeFragment {
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
         binding = FragmentDashboardBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
         config = ConfigManager.getConfig();
@@ -129,8 +128,6 @@ public class DashboardFragment extends HomeFragment {
                     })
                     .show();
         });
-
-
         Button buttonBatDau = binding.buttonBatDau;
         Button buttonKetThuc = binding.buttonKetThuc;
         updateStartStopButtonVisibility(buttonBatDau, buttonKetThuc);
@@ -144,8 +141,6 @@ public class DashboardFragment extends HomeFragment {
         binding.buttonKetThuc.setOnClickListener(v -> {
             toggleEndButton(binding.buttonBatDau, binding.buttonKetThuc);
         });
-
-
         startCamera();
         return root;
     }
@@ -187,7 +182,6 @@ public class DashboardFragment extends HomeFragment {
         lowRed = new Scalar(0, initialSaturation, 1);
         lowRed1 = new Scalar(150, initialSaturation, 1);
         Log.d("saturation", String.valueOf(initialSaturation));
-
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -246,8 +240,6 @@ public class DashboardFragment extends HomeFragment {
         Log.d("RadioGroup", tai + " selected");
     }
 
-
-
     private void updateStartStopButtonVisibility(Button buttonBatDau, Button buttonKetThuc) {
         if (config.getIsStart()) {
             buttonBatDau.setVisibility(View.GONE);
@@ -257,8 +249,6 @@ public class DashboardFragment extends HomeFragment {
             buttonKetThuc.setVisibility(View.GONE);
         }
     }
-
-
 
     private void resetValues() {
         // Sử dụng setter để cập nhật giá trị cho previousAngle và totalRotation
@@ -296,15 +286,6 @@ public class DashboardFragment extends HomeFragment {
         mqtt.sendMQTTCommand(mqtt, "COMMAND=1");
         config.setStart(true);
         isRunning = true;
-        timer = new Timer();
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                mqtt.sendMQTTCommand(mqtt, "ROUND=" + config.getRound());
-            }
-        }, 0, 1000); // Gửi lệnh mỗi 1 giây
-
-        // Cập nhật UI
         buttonBatDau.setVisibility(View.GONE);
         buttonKetThuc.setVisibility(View.VISIBLE);
     }
@@ -469,7 +450,7 @@ public class DashboardFragment extends HomeFragment {
                         String stt = "Stt: " + config.getStt();
                         String loai = "Loai: " + (config.getType().equals("Kiểm") ? "Kiem" : "Mau");
                         String tai = "Tai: " + config.getTai();
-                        String saiso = "Sai So dh Mau: "+ config.getSsDhm();
+                        String saiso = "V chuan: "+ config.getSsDhm();
 
                         // Định nghĩa các điểm và thông số vẽ
                         Point pointSerial = new Point(10, 100);
@@ -643,19 +624,15 @@ public class DashboardFragment extends HomeFragment {
             TextView textView6 = binding.textViewLuongNuocValueNew;
             textView6.setText(decimalFormat.format(config.getRound())+ " Lít");
         }
-        if ("Mẫu".equals(config.getType())) {
-            return;
-        }
-
         if (config.getIsStart()) {
             TextView textView7 = binding.textViewChenhLechValueNew;
             TextView textView9 = binding.textViewSaiSoValueNew;
 
             // Tính toán
-            config.setFalseValueMeter(config.getRound() - config.getValueMau());
+            double VChuan = Double.parseDouble(config.getSsDhm());
+            config.setFalseValueMeter(config.getRound() - VChuan);
             double ratioValue = (config.getFalseValueMeter() / config.getRound()) * 100;
-            double ssDhm = Double.parseDouble(config.getSsDhm());
-            double correction = (((ssDhm / 100) + 1) * (ratioValue / 100 + 1) - 1) * 100;
+            double correction = (config.getRound()-VChuan) * 100 / VChuan;
             // ((( ss đhm /100 ) + 1 ) * (tỉ lệ sai lệch đh Mẫu với đh kiểm / 100 + 1) -1)* 100
             config.setRatio(ratioValue);
             config.setCorrection(correction);
