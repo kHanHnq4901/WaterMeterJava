@@ -376,7 +376,7 @@ public class DashboardFragment extends HomeFragment {
                         for (MatOfPoint c : contours) {
                             double contourArea = Imgproc.contourArea(c);
 
-                            if (contourArea > 3000 && contourArea < 50000) {
+                            if (contourArea > 3000 && contourArea < 90000) {
                                 MatOfInt hull = new MatOfInt();
                                 Imgproc.convexHull(c, hull);
                                 List<Point> hullPoints = new ArrayList<>();
