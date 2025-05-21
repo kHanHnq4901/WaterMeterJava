@@ -10,17 +10,23 @@ public class Config {
     private String errQ3 = "0";
     private String type = "Kiểm";
     private String tai = "QIII";
-    private String ssDhm = "0";
+    private double ssDhm = 0;
+    private String ip = "14.225.244.63";
+    private String port = "2883";
     private int saturation = 50 ;
-    private double roundOld1 = 0;
+    private double roundOld = 0.0;
+    private double falseValueMeterOld = 0;
+    private double ratioOld = 0;
+    private double correctionOld = 0;
     private double falseValueMeterOld1 = 0;
+    private double roundOld1 = 0.0;
     private double ratioOld1 = 0;
     private double correctionOld1 = 0;
-    private double roundOld2 = 0;
+    private double roundOld2 = 0.0;
     private double falseValueMeterOld2 = 0;
     private double ratioOld2 = 0;
     private double correctionOld2 = 0;
-    private double round = 0;
+    private double round = 0.0;
     private boolean isConnect = false;
     private boolean isStart = false;
     private double valueMau = 0;
@@ -112,14 +118,28 @@ public class Config {
         this.tai = tai;
     }
 
-    public String getSsDhm() {
+    public double getSsDhm() {
         return ssDhm;
     }
 
-    public void setSsDhm(String ssDhm) {
+    public void setSsDhm(double ssDhm) {
         this.ssDhm = ssDhm;
     }
 
+    public String getIp() {
+        return ip;
+    }
+
+    public void setIp(String ip) {
+        this.ip = ip;
+    }
+    public String getPort() {
+        return port;
+    }
+
+    public void setPort(String port) {
+        this.port = port;
+    }
     // Getter and Setter methods for boolean variables
 
     public boolean getIsConnect() {
@@ -224,10 +244,40 @@ public class Config {
         this.angelStart = angelStart;
     }
 
+    public double getRoundOld() {
+        return roundOld;
+    }
+    public void setRoundOld(double roundOld) {
+        this.roundOld = roundOld;
+    }
+
+    public double getFalseValueMeterOld() {
+        return falseValueMeterOld;
+    }
+
+    public void setFalseValueMeterOld(double falseValueMeterOld) {
+        this.falseValueMeterOld = falseValueMeterOld;
+    }
+
+    public double getRatioOld() {
+        return ratioOld;
+    }
+
+    public void setRatioOld(double ratioOld) {
+        this.ratioOld = ratioOld;
+    }
+
+    public double getCorrectionOld() {
+        return correctionOld;
+    }
+
+    public void setCorrectionOld(double correctionOld) {
+        this.correctionOld = correctionOld;
+    }
+
     public double getRoundOld1() {
         return roundOld1;
     }
-
     public void setRoundOld1(double roundOld1) {
         this.roundOld1 = roundOld1;
     }

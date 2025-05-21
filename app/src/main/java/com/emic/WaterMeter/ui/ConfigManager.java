@@ -51,6 +51,8 @@ public class ConfigManager {
             config.setErrQIII(sharedPreferences.getString("errQIII", "0"));
             config.setErrQ3(sharedPreferences.getString("errQ3", "0"));
             config.setType(sharedPreferences.getString("type", "Kiểm"));
+            config.setIp(sharedPreferences.getString("ip", ""));
+            config.setPort(sharedPreferences.getString("port", ""));
             config.setConnect(false);
             config.setStart(false);
 
@@ -79,6 +81,8 @@ public class ConfigManager {
             editor.putString("errQ3", config.getErrQ3());
             editor.putString("type", config.getType());
             editor.putString("saturation", String.valueOf(config.getSaturation()));
+            editor.putString("ip", config.getIp());
+            editor.putString("port",config.getPort());
             editor.apply(); // Hoặc editor.commit();
         }
     }

@@ -48,63 +48,59 @@ public class Mqtt {
     }
     public void connect(Context context) {
         executorReceive.execute(() -> {
-        try {
-            if (config == null) {
-                config = ConfigManager.getConfig();
-            }
-            // Initialize the MqttClient only if it's not already initialized
-            if (client == null) {
-                // Generate a random number between 1 and 1,000,000
+            try {
+                if (config == null) {
+                    config = ConfigManager.getConfig();
+                }
+
+                // Nếu client đã tồn tại và đang kết nối → Ngắt kết nối và đóng client
+                if (client != null && client.isConnected()) {
+                    System.out.println("Đã kết nối trước đó → Ngắt kết nối...");
+                    client.disconnect();
+                    client.close();
+                    client = null; // làm mới client
+                }
+
+                // Khởi tạo client mới với IP và Port từ config
                 Random random = new Random();
                 int randomNumber = random.nextInt(1_000_000) + 1;
-
-                System.out.println("Initializing MQTT Client...");
-
-                // Use the random number to make the client ID unique
                 String clientId = String.valueOf(randomNumber);
+                String brokerUrl = "tcp://" + config.getIp() + ":" + config.getPort();
 
-                // Initialize the MQTT client with the unique client ID
-                client = new MqttClient("tcp://222.252.14.147:2883", clientId, new MemoryPersistence());
-            }
+                System.out.println("Khởi tạo MQTT Client mới...");
+                client = new MqttClient(brokerUrl, clientId, new MemoryPersistence());
 
-            if (isConnected()) {
-                System.out.println("Already connected to máy chủ .");
-                runOnUiThread(context, "Đã kết nối đến máy chủ ");
-                subscribe(config.getStaging());
-                return; // No need to connect again
-            }
+                MqttConnectOptions connectOptions = new MqttConnectOptions();
+                connectOptions.setCleanSession(false);
+                connectOptions.setUserName("emservice");
+                connectOptions.setPassword("Fj93m54j3g7h3iom47cb5y6Y".toCharArray());
+                connectOptions.setAutomaticReconnect(true);
+                connectOptions.setConnectionTimeout(10);
+                connectOptions.setKeepAliveInterval(300);
 
-            System.out.println("Connecting to MQTT Broker...");
-            MqttConnectOptions connectOptions = new MqttConnectOptions();
-            connectOptions.setCleanSession(false);
-            connectOptions.setUserName("emservice");
-            connectOptions.setPassword("Fj93m54j3g7h3iom47cb5y6Y".toCharArray());
-            connectOptions.setAutomaticReconnect(true);
-            connectOptions.setConnectionTimeout(10);  // 10 second timeout
-            connectOptions.setKeepAliveInterval(300); // 30 seconds keep-alive
-
-            client.setCallback(new MqttCallback() {
-                @Override
-                public void connectionLost(Throwable cause) {
-                    System.err.println("Connection lost: " + cause.getMessage());
-                    // Handle reconnection in a separate thread
-                    new Thread(() -> {
-                        while (!isConnected()) {
-                            try {
-                                System.out.println("Attempting to reconnect...");
-                                client.reconnect();
-                                System.out.println("Reconnected to MQTT Broker.");
-                            } catch (MqttException e) {
-                                System.err.println("Reconnect failed: " + e.getMessage());
+                client.setCallback(new MqttCallback() {
+                    @Override
+                    public void connectionLost(Throwable cause) {
+                        System.err.println("Mất kết nối: " + cause.getMessage());
+                        new Thread(() -> {
+                            while (!isConnected()) {
                                 try {
-                                    Thread.sleep(5000); // Wait before retrying
-                                } catch (InterruptedException ex) {
-                                    throw new RuntimeException(ex);
+                                    System.out.println("Thử kết nối lại...");
+                                    client.reconnect();
+                                    System.out.println("Đã kết nối lại MQTT.");
+                                    Mqtt.this.runOnUiThread(context, "Đã kết nối lại máy chủ");
+                                    subscribe(config.getStaging());
+                                } catch (MqttException e) {
+                                    System.err.println("Reconnect thất bại: " + e.getMessage());
+                                    try {
+                                        Thread.sleep(5000);
+                                    } catch (InterruptedException ex) {
+                                        ex.printStackTrace();
+                                    }
                                 }
                             }
-                        }
-                    }).start();
-                }
+                        }).start();
+                    }
 
 
                 private final Queue<String> messageBuffer = new ConcurrentLinkedQueue<>();
@@ -270,6 +266,7 @@ public class Mqtt {
                             break;
                         case 3:
                             runOnUiThread(() -> Toast.makeText(context, "Làm mới", Toast.LENGTH_LONG).show());
+                            HistoryLogger.logCurrentData(config);
                             config.setRound(0);
                             config.setValueMau(0);
                             config.setFalseValueMeter(0);
@@ -287,7 +284,7 @@ public class Mqtt {
                             break;
                         case 5:
                             runOnUiThread(() -> Toast.makeText(context, "Đang lưu", Toast.LENGTH_LONG).show());
-                            handleSaveExcel();
+                            handleSaveExcel(context);
                             break;
                         default:
                             System.out.println("Unknown command: " + command);
@@ -302,7 +299,8 @@ public class Mqtt {
 
                 private void handleError(String errorValue) {
                     System.out.println("Received ERROR value: " + errorValue);
-                    config.setSsDhm(errorValue);
+                    double value = Double.parseDouble(errorValue);
+                    config.setSsDhm(value);
                     runOnUiThread(() -> Toast.makeText(context, "Cập nhật tải và sai số", Toast.LENGTH_LONG).show());
                 }
 
@@ -317,39 +315,30 @@ public class Mqtt {
                             System.err.println("Config is null, cannot proceed with handleSave.");
                             return;
                         }
-                        // Lưu giá trị Old1 vào biến tạm trước khi cập nhật
-                        double roundOld1Temp = config.getRoundOld1();
-                        double falseValueMeterOld1Temp = config.getFalseValueMeterOld1();
-                        double ratioOld1Temp = config.getRatioOld1();
-                        double correctionOld1Temp = config.getCorrectionOld1();
+                        // Bước 1: Di chuyển Old1 → Old2
+                        config.setRoundOld2(config.getRoundOld1());
+                        config.setFalseValueMeterOld2(config.getFalseValueMeterOld1());
+                        config.setRatioOld2(config.getRatioOld1());
+                        config.setCorrectionOld2(config.getCorrectionOld1());
 
-                        // Cập nhật Old2 trước
-                        config.setRoundOld2(roundOld1Temp);
-                        config.setFalseValueMeterOld2(falseValueMeterOld1Temp);
-                        config.setRatioOld2(ratioOld1Temp);
-                        config.setCorrectionOld2(correctionOld1Temp);
+                        // Bước 2: Di chuyển Old → Old1
+                        config.setRoundOld1(config.getRoundOld());
+                        config.setFalseValueMeterOld1(config.getFalseValueMeterOld());
+                        config.setRatioOld1(config.getRatioOld());
+                        config.setCorrectionOld1(config.getCorrectionOld());
 
-                        // Kiểm tra xem Old2 đã cập nhật đúng chưa
-                        if (config.getRoundOld2() == roundOld1Temp &&
-                                config.getFalseValueMeterOld2() == falseValueMeterOld1Temp &&
-                                config.getRatioOld2() == ratioOld1Temp &&
-                                config.getCorrectionOld2() == correctionOld1Temp) {
-
-                            // Nếu Old2 cập nhật xong hết, mới cập nhật Old1
-                            config.setRoundOld1(config.getRound());
-                            config.setFalseValueMeterOld1(config.getFalseValueMeter());
-                            config.setRatioOld1(config.getRatio());
-                            config.setCorrectionOld1(config.getCorrection());
-                        } else {
-                            System.err.println("Error: Old2 values were not updated correctly. Aborting Old1 update.");
-                        }
+                        // Bước 3: Cập nhật giá trị hiện tại → Old
+                        config.setRoundOld(config.getRound());
+                        config.setFalseValueMeterOld(config.getFalseValueMeter());
+                        config.setRatioOld(config.getRatio());
+                        config.setCorrectionOld(config.getCorrection());
 
                     } catch (Exception e) {
                         System.err.println("Error in handleSave: " + e.getMessage());
                     }
                 }
 
-                private void handleSaveExcel() {
+                private void handleSaveExcel(Context context) {
                     try {
                         System.out.println("Received SAVE value: ");
 
@@ -400,14 +389,14 @@ public class Mqtt {
                                 safeDecimal(config.getFalseValueMeter(), decimalFormat),
                                 safeDecimal(config.getRatio(), decimalFormat),
                                 safeString(config.getTai()),
-                                safeString(config.getSsDhm()),
+                                safeString(String.valueOf(config.getSsDhm())),
                                 currentTime
                         );
 
                         // Gửi lệnh MQTT
                         Mqtt mqtt;
                         mqtt = Mqtt.getInstance();
-                        sendMQTTCommand(mqtt,payload);
+                        sendMQTTCommand(mqtt,payload,context);
                     } catch (Exception e) {
                         System.err.println("Error in handleSave: " + e.getMessage());
                     }
@@ -449,7 +438,7 @@ public class Mqtt {
         } catch (MqttException e) {
             System.err.println("Error during connection: " + e.getMessage());
             // Show Toast for connection failure
-            Toast.makeText(context, "Kết nối thất bại: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            runOnUiThread(context, "Kết nối thất bại " + e.getMessage());
         }
         });
     }
@@ -489,7 +478,7 @@ public class Mqtt {
         }
     }
 
-    public void sendMQTTCommand(Mqtt mqtt, String payload) {
+    public void sendMQTTCommand(Mqtt mqtt, String payload,Context context) {
         executorSend.execute(() -> {
             if (mqtt.client != null && mqtt.client.isConnected()) {
                 try {
@@ -502,6 +491,7 @@ public class Mqtt {
                 }
             } else {
                 Log.e("MQTT", "Client chưa kết nối, không thể gửi lệnh!");
+                runOnUiThread(context, "Client chưa kết nối, không thể gửi lệnh!");
             }
         });
     }

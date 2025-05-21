@@ -64,24 +64,20 @@ public class HomeFragment extends Fragment {
         config.setErrQIII(sharedPreferences.getString("errQIII", "0"));
         config.setErrQ3(sharedPreferences.getString("errQ3", "0"));
         config.setType(sharedPreferences.getString("type", "Kiểm"));
-
+        config.setIp(sharedPreferences.getString("ip", "14.225.244.63"));
+        config.setPort(sharedPreferences.getString("port", "2883"));
         // Lấy MQTT instance
         mqtt = Mqtt.getInstance(); // Singleton instance
 
         // Thiết lập giá trị ban đầu cho EditText
         binding.serialInput.setText(config.getSerial());
         binding.stagingInput.setText(config.getStaging());
-        binding.qiInput.setText(config.getErrQI());
-        binding.qiiInput.setText(config.getErrQII());
-        binding.qiiiInput.setText(config.getErrQIII());
-        binding.q3Input.setText(config.getErrQ3());
+        binding.ipInput.setText(config.getIp());
+        binding.portInput.setText(config.getPort());
 
         // Chọn radio button phù hợp
         int radioButtonId = config.getType().equals("Kiểm") ? R.id.typeSample : R.id.typeCheck;
         binding.typeRadioGroup.check(radioButtonId);
-
-        // Cập nhật hiển thị theo loại
-        updateSaiSoSectionVisibility(config.getType());
 
         // Thêm sự kiện thay đổi giá trị radio button
         binding.typeRadioGroup.setOnCheckedChangeListener((group, checkedId) -> {
@@ -89,7 +85,6 @@ public class HomeFragment extends Fragment {
             String selectedType = selectedRadioButton.getText().toString();
             config.setType(selectedType);
             Log.d("RadioGroup", "Selected Type: " + selectedType);
-            updateSaiSoSectionVisibility(selectedType);
         });
 
         // Thêm TextWatcher để cập nhật config khi nhập liệu
@@ -111,10 +106,6 @@ public class HomeFragment extends Fragment {
     private void setupTextWatchers() {
         binding.serialInput.addTextChangedListener(createTextWatcher(text -> config.setSerial(text)));
         binding.stagingInput.addTextChangedListener(createTextWatcher(text -> config.setStaging(text)));
-        binding.qiInput.addTextChangedListener(createTextWatcher(text -> config.setErrQI(text)));
-        binding.qiiInput.addTextChangedListener(createTextWatcher(text -> config.setErrQII(text)));
-        binding.qiiiInput.addTextChangedListener(createTextWatcher(text -> config.setErrQIII(text)));
-        binding.q3Input.addTextChangedListener(createTextWatcher(text -> config.setErrQ3(text)));
     }
 
     private TextWatcher createTextWatcher(TextChangeListener listener) {
@@ -136,13 +127,7 @@ public class HomeFragment extends Fragment {
         void onTextChanged(String text);
     }
 
-    private void updateSaiSoSectionVisibility(String type) {
-        if ("Kiểm".equals(type)) {
-            binding.saiSoSection.setVisibility(View.GONE);
-        } else {
-            binding.saiSoSection.setVisibility(View.VISIBLE);
-        }
-    }
+
 
     private void handleConnect() {
         if (config == null) {
@@ -153,11 +138,8 @@ public class HomeFragment extends Fragment {
         // Cập nhật config từ UI
         config.setSerial(binding.serialInput.getText().toString());
         config.setStaging(binding.stagingInput.getText().toString());
-        config.setErrQI(binding.qiInput.getText().toString());
-        config.setErrQII(binding.qiiInput.getText().toString());
-        config.setErrQIII(binding.qiiiInput.getText().toString());
-        config.setErrQ3(binding.q3Input.getText().toString());
-
+        config.setIp(binding.ipInput.getText().toString());
+        config.setPort(binding.portInput.getText().toString());
         int selectedId = binding.typeRadioGroup.getCheckedRadioButtonId();
         if (selectedId != -1) {
             RadioButton selectedRadioButton = binding.getRoot().findViewById(selectedId);

@@ -8,14 +8,19 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.text.InputType;
+import android.text.SpannableString;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.OptIn;
@@ -35,6 +40,7 @@ import androidx.camera.lifecycle.ProcessCameraProvider;
 
 import com.emic.watermeter.ui.Config;
 import com.emic.watermeter.ui.ConfigManager;
+import com.emic.watermeter.ui.HistoryLogger;
 import com.emic.watermeter.ui.Mqtt;
 import com.emic.watermeter.ui.home.HomeFragment;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -51,9 +57,13 @@ import org.opencv.imgproc.Imgproc;
 
 import java.nio.ByteBuffer;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Queue;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -65,7 +75,7 @@ public class DashboardFragment extends HomeFragment {
     protected com.emic.watermeter.ui.Mqtt mqtt;
     private static Config config;
     private SharedPreferences sharedPreferences;
-
+    private final List<String[]> historyList = new ArrayList<>();
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
@@ -80,20 +90,22 @@ public class DashboardFragment extends HomeFragment {
         // Nút "Làm Mới"
         binding.buttonLamMoi.setOnClickListener(v -> {
             resetValues();
-            mqtt.sendMQTTCommand(mqtt, "COMMAND=3");
+            mqtt.sendMQTTCommand(mqtt, "COMMAND=3", requireActivity());
+
+            // Ghi log lịch sử từ config
+            HistoryLogger.logCurrentData(config);
         });
 
-        // Nút "Lưu"
         binding.buttonLuu.setOnClickListener(v -> {
             saveCurrentConfig();
-            mqtt.sendMQTTCommand(mqtt, "COMMAND=4");
+            mqtt.sendMQTTCommand(mqtt, "COMMAND=4", requireActivity());
         });
 
-        // Nút "Lưu Excel"
         binding.buttonLuuExcel.setOnClickListener(v -> {
             saveCurrentConfig();
-            mqtt.sendMQTTCommand(mqtt, "COMMAND=5");
+            mqtt.sendMQTTCommand(mqtt, "COMMAND=5", requireActivity());
         });
+
 
         Button buttonBatDau = binding.buttonBatDau;
         Button buttonKetThuc = binding.buttonKetThuc;
@@ -108,7 +120,16 @@ public class DashboardFragment extends HomeFragment {
         binding.buttonKetThuc.setOnClickListener(v -> {
             toggleEndButton(binding.buttonBatDau, binding.buttonKetThuc);
         });
+        binding.iconHistory.setOnClickListener(v -> {
+            AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+            builder.setTitle("Lịch sử làm mới");
 
+            SpannableString historyText = HistoryLogger.getHistoryAsStyledString(); // Lấy lịch sử
+
+            builder.setMessage(historyText);
+            builder.setPositiveButton("Đóng", (dialog, which) -> dialog.dismiss());
+            builder.show();
+        });
 
         startCamera();
         return root;
@@ -121,7 +142,7 @@ public class DashboardFragment extends HomeFragment {
         };
         String[] taiOptions = {"QI", "QII", "QIII", "Q3"};
 
-        // Set initial state for the radio buttons based on config.getTai()
+        // Set initial state
         for (int i = 0; i < radioButtons.length; i++) {
             if (taiOptions[i].equals(config.getTai())) {
                 radioButtons[i].setChecked(true);
@@ -129,15 +150,93 @@ public class DashboardFragment extends HomeFragment {
             }
         }
 
-        // Set click listeners for each radio button
         for (int i = 0; i < radioButtons.length; i++) {
             final String tai = taiOptions[i];
-            final double errValue = getErrValue(tai) != null ? Double.parseDouble(getErrValue(tai)) : 0.0;
 
+            // Click chọn
+            radioButtons[i].setOnClickListener(v -> {
+                String value = getErrValue(tai);
+                double errValue = value != null && !value.isEmpty() ? Double.parseDouble(value) : 0.0;
+                onRadioButtonClicked(tai, errValue);
+            });
 
-            radioButtons[i].setOnClickListener(v -> onRadioButtonClicked(tai, errValue));
+            // Long press để hiện ô nhập
+            radioButtons[i].setOnLongClickListener(v -> {
+                showEditValueDialog(tai);
+                return true;
+            });
         }
     }
+
+    private void showEditValueDialog(String tai) {
+        EditText input = new EditText(requireContext());
+        input.setInputType(InputType.TYPE_NUMBER_FLAG_DECIMAL | InputType.TYPE_CLASS_NUMBER);
+
+        // Đặt giá trị hiện tại vào EditText (nếu có)
+        String currentValue = getErrValue(tai);
+        if (currentValue != null && !currentValue.isEmpty()) {
+            input.setText(currentValue);
+        }
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Cập nhật V chuẩn cho " + tai)
+                .setView(input)
+                .setPositiveButton("Lưu", (dialog, which) -> {
+                    String value = input.getText().toString().trim();
+
+                    // Lưu giá trị theo từng loại `tai`
+                    switch (tai) {
+                        case "QI":
+                            config.setErrQI(value);
+                            break;
+                        case "QII":
+                            config.setErrQII(value);
+                            break;
+                        case "QIII":
+                            config.setErrQIII(value);
+                            break;
+                        case "Q3":
+                            config.setErrQ3(value);
+                            break;
+                    }
+
+                    // Xử lý sau khi lưu (cập nhật giao diện hoặc lưu file/db)
+                    onErrValueSaved(tai, value);
+
+                    Toast.makeText(requireContext(), "Đã lưu giá trị: " + value + " cho " + tai, Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton("Hủy", null)
+                .show();
+    }
+    private void onErrValueSaved(String tai, String value) {
+        // Lưu giá trị mới vào SharedPreferences
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        switch (tai) {
+            case "QI":
+                editor.putString("errQI", value);
+                config.setErrQI(value);
+                break;
+            case "QII":
+                editor.putString("errQII", value);
+                config.setErrQII(value);
+                break;
+            case "QIII":
+                editor.putString("errQIII", value);
+                config.setErrQIII(value);
+                break;
+            case "Q3":
+                editor.putString("errQ3", value);
+                config.setErrQ3(value);
+                break;
+        }
+        editor.apply(); // hoặc editor.commit();
+
+        // Hiển thị thông báo
+        Toast.makeText(requireContext(), "Đã cập nhật thành công giá trị cho " + tai, Toast.LENGTH_SHORT).show();
+    }
+
+
+
 
     private void setupSeekBar() {
         SeekBar seekBar = binding.seekBarSaturation;
@@ -181,32 +280,23 @@ public class DashboardFragment extends HomeFragment {
     }
 
     private void saveCurrentConfig() {
-        // Lưu giá trị Old1 vào biến tạm trước khi cập nhật
-        double roundOld1Temp = config.getRoundOld1();
-        double falseValueMeterOld1Temp = config.getFalseValueMeterOld1();
-        double ratioOld1Temp = config.getRatioOld1();
-        double correctionOld1Temp = config.getCorrectionOld1();
+        // Bước 1: Di chuyển Old1 → Old2
+        config.setRoundOld2(config.getRoundOld1());
+        config.setFalseValueMeterOld2(config.getFalseValueMeterOld1());
+        config.setRatioOld2(config.getRatioOld1());
+        config.setCorrectionOld2(config.getCorrectionOld1());
 
-        // Cập nhật Old2 trước
-        config.setRoundOld2(roundOld1Temp);
-        config.setFalseValueMeterOld2(falseValueMeterOld1Temp);
-        config.setRatioOld2(ratioOld1Temp);
-        config.setCorrectionOld2(correctionOld1Temp);
+        // Bước 2: Di chuyển Old → Old1
+        config.setRoundOld1(config.getRoundOld());
+        config.setFalseValueMeterOld1(config.getFalseValueMeterOld());
+        config.setRatioOld1(config.getRatioOld());
+        config.setCorrectionOld1(config.getCorrectionOld());
 
-        // Kiểm tra xem Old2 đã cập nhật đúng chưa
-        if (config.getRoundOld2() == roundOld1Temp &&
-                config.getFalseValueMeterOld2() == falseValueMeterOld1Temp &&
-                config.getRatioOld2() == ratioOld1Temp &&
-                config.getCorrectionOld2() == correctionOld1Temp) {
-
-            // Nếu Old2 cập nhật xong hết, mới cập nhật Old1
-            config.setRoundOld1(config.getRound());
-            config.setFalseValueMeterOld1(config.getFalseValueMeter());
-            config.setRatioOld1(config.getRatio());
-            config.setCorrectionOld1(config.getCorrection());
-        } else {
-            System.err.println("Error: Old2 values were not updated correctly. Aborting Old1 update.");
-        }
+        // Bước 3: Cập nhật giá trị hiện tại → Old
+        config.setRoundOld(config.getRound());
+        config.setFalseValueMeterOld(config.getFalseValueMeter());
+        config.setRatioOld(config.getRatio());
+        config.setCorrectionOld(config.getCorrection());
     }
 
 
@@ -222,9 +312,9 @@ public class DashboardFragment extends HomeFragment {
 
     private void onRadioButtonClicked(String tai, double errValue) {
         config.setTai(tai);
-        config.setSsDhm(String.valueOf(errValue));
-        mqtt.sendMQTTCommand(mqtt,"ERROR=" + errValue);
-        mqtt.sendMQTTCommand(mqtt,"TAI=" + tai);
+        config.setSsDhm(errValue);
+        mqtt.sendMQTTCommand(mqtt,"ERROR=" + errValue,requireActivity());
+        mqtt.sendMQTTCommand(mqtt,"TAI=" + tai,requireActivity());
         Log.d("RadioGroup", tai + " selected");
     }
 
@@ -254,10 +344,6 @@ public class DashboardFragment extends HomeFragment {
 
         // Đặt lại số vòng (round) bằng setter
         config.setRound(0);
-
-        // Cập nhật giao diện người dùng
-        TextView textView6 = binding.textViewLuongNuocValueOld2;
-        textView6.setText(String.valueOf(config.getRound()));
     }
 
 
@@ -275,17 +361,9 @@ public class DashboardFragment extends HomeFragment {
             return;
         }
         // Gửi lệnh bắt đầu
-        mqtt.sendMQTTCommand(mqtt, "COMMAND=1");
+        mqtt.sendMQTTCommand(mqtt, "COMMAND=1",requireActivity());
         config.setStart(true);
         isRunning = true;
-        timer = new Timer();
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                mqtt.sendMQTTCommand(mqtt, "ROUND=" + config.getRound());
-            }
-        }, 0, 1000); // Gửi lệnh mỗi 1 giây
-
         // Cập nhật UI
         buttonBatDau.setVisibility(View.GONE);
         buttonKetThuc.setVisibility(View.VISIBLE);
@@ -306,7 +384,7 @@ public class DashboardFragment extends HomeFragment {
         buttonBatDau.setVisibility(View.VISIBLE);
 
         // Gửi lệnh dừng
-        mqtt.sendMQTTCommand(mqtt, "COMMAND=2");
+        mqtt.sendMQTTCommand(mqtt, "COMMAND=2",requireActivity());
         config.setStart(false);
     }
 
@@ -461,7 +539,7 @@ public class DashboardFragment extends HomeFragment {
                         textSTT.setText("Stt: " + config.getStt());
                         textLoai.setText("Loại: " + config.getType());
                         textTai.setText("Tải: " + config.getTai());
-                        textSaiSo.setText("Sai số dhm: " + config.getSsDhm());
+                        textSaiSo.setText("V chuẩn: " + config.getSsDhm());
                         displayProcessedImage(matRGB);
                     } catch (Exception e) {
                         Log.e("ImageAnalysis", "Error processing image", e);
@@ -585,45 +663,68 @@ public class DashboardFragment extends HomeFragment {
     @SuppressLint("SetTextI18n")
     private void updateUIWithMQTT() {
         DecimalFormat decimalFormat = new DecimalFormat("#.##");
-
-        // Lấy màu dựa trên điều kiện
+        int textColorOld = (config.getCorrectionOld() < -1.5 || config.getCorrectionOld() > 1.5) ? Color.RED : Color.GREEN;
         int textColorOld1 = (config.getCorrectionOld1() < -1.5 || config.getCorrectionOld1() > 1.5) ? Color.RED : Color.GREEN;
         int textColorOld2 = (config.getCorrectionOld2() < -1.5 || config.getCorrectionOld2() > 1.5) ? Color.RED : Color.GREEN;
-
-        // Thiết lập dữ liệu cho các TextView
-        setTextView(binding.textViewLuongNuocValueOld1, config.getRoundOld1(), " Lít");
-        setTextView(binding.textViewChenhLechValueOld1, config.getFalseValueMeterOld1(), " Lít", textColorOld1);
-        setTextView(binding.textViewSaiSoValueOld1, config.getCorrectionOld1(), " %", textColorOld1);
-
-        setTextView(binding.textViewLuongNuocValueOld2, config.getRoundOld2(), " Lít");
-        setTextView(binding.textViewChenhLechValueOld2, config.getFalseValueMeterOld2(), " Lít", textColorOld2);
-        setTextView(binding.textViewSaiSoValueOld2, config.getCorrectionOld2(), " %", textColorOld2);
-
-        // Nếu đang chạy, cập nhật dữ liệu mới
+        TextView textViewLuongNuocOld = binding.textViewLuongNuocValueOld;
+        TextView textViewChenhLechOld = binding.textViewChenhLechValueOld;
+        TextView textViewSaiSoOld = binding.textViewSaiSoValueOld;
+        TextView textViewLuongNuocOld1 = binding.textViewLuongNuocValueOld1;
+        TextView textViewChenhLechOld1 = binding.textViewChenhLechValueOld1;
+        TextView textViewSaiSoOld1 = binding.textViewSaiSoValueOld1;
+        TextView textViewLuongNuocOld2 = binding.textViewLuongNuocValueOld2;
+        TextView textViewChenhLechOld2 = binding.textViewChenhLechValueOld2;
+        TextView textViewSaiSoOld2 = binding.textViewSaiSoValueOld2;
+        textViewLuongNuocOld.setText(decimalFormat.format(config.getRoundOld()) + " Lít");
+        textViewChenhLechOld.setText(decimalFormat.format(config.getFalseValueMeterOld()) + " Lít");
+        textViewSaiSoOld.setText(decimalFormat.format(config.getCorrectionOld()) + " %");
+        textViewLuongNuocOld1.setText(decimalFormat.format(config.getRoundOld1()) + " Lít");
+        textViewChenhLechOld1.setText(decimalFormat.format(config.getFalseValueMeterOld1()) + " Lít");
+        textViewSaiSoOld1.setText(decimalFormat.format(config.getCorrectionOld1()) + " %");
+        textViewLuongNuocOld2.setText(decimalFormat.format(config.getRoundOld2()) + " Lít");
+        textViewChenhLechOld2.setText(decimalFormat.format(config.getFalseValueMeterOld2()) + " Lít");
+        textViewSaiSoOld2.setText(decimalFormat.format(config.getCorrectionOld2()) + " %");
+        textViewChenhLechOld.setTextColor(textColorOld);
+        textViewSaiSoOld.setTextColor(textColorOld);
+        textViewChenhLechOld1.setTextColor(textColorOld1);
+        textViewSaiSoOld1.setTextColor(textColorOld1);
+        textViewChenhLechOld2.setTextColor(textColorOld2);
+        textViewSaiSoOld2.setTextColor(textColorOld2);
         if (config.getIsStart()) {
-            setTextView(binding.textViewLuongNuocValueNew, config.getRound(), " Lít");
+            TextView textView6 = binding.textViewLuongNuocValueNew;
+            textView6.setText(decimalFormat.format(config.getRound()) + " Lít");
         }
-
-        // Nếu loại là "Mẫu" thì không cần xử lý tiếp
-        if ("Mẫu".equals(config.getType())) {
-            return;
-        }
-
-        // Nếu đang chạy, tính toán và cập nhật dữ liệu mới
         if (config.getIsStart()) {
-            // Tính toán giá trị sai số
-            config.setFalseValueMeter(config.getRound() - config.getValueMau());
-            double ratioValue = (config.getFalseValueMeter() / config.getRound()) * 100;
-            double ssDhm = Double.parseDouble(config.getSsDhm());
-            double correction = (((ssDhm / 100) + 1) * (ratioValue / 100 + 1) - 1) * 100;
+            TextView textView7 = binding.textViewChenhLechValueNew;
+            TextView textView9 = binding.textViewSaiSoValueNew;
+            // Tính toán
+            double VChuan = config.getSsDhm();
+            double round = config.getRound();
 
+            double falseValue = round - VChuan;
+            config.setFalseValueMeter(falseValue);
+
+            double correction = 0;
+            double ratioValue = 0;
+
+            if (VChuan != 0) {
+                correction = falseValue * 100 / VChuan;
+                ratioValue = (falseValue / round) * 100;
+            }
+            config.setCorrection(correction);
+            config.setRatio(ratioValue);
+            // ((( ss đhm /100 ) + 1 ) * (tỉ lệ sai lệch đh Mẫu với đh kiểm / 100 + 1) -1)* 100
             config.setRatio(ratioValue);
             config.setCorrection(correction);
 
             int textColor = (correction < -1.5 || correction > 1.5) ? Color.RED : Color.GREEN;
 
-            setTextView(binding.textViewChenhLechValueNew, config.getFalseValueMeter(), " Lít", textColor);
-            setTextView(binding.textViewSaiSoValueNew, correction, " %", textColor);
+            textView7.setText(decimalFormat.format(config.getFalseValueMeter()) + " Lít");
+            textView9.setText(decimalFormat.format(correction) + "%");
+
+            textView7.setTextColor(textColor);
+
+            textView9.setTextColor(textColor);
         }
     }
 
@@ -722,10 +823,9 @@ public class DashboardFragment extends HomeFragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-
-        if (config.getIsStart()) {
+        if (config.getIsStart() && !"Kiểm".equals(config.getType())) {
             config.setStart(false); // Đảm bảo isStart được đặt về false khi View bị hủy
-            mqtt.sendMQTTCommand(mqtt, "COMMAND=2");
+            mqtt.sendMQTTCommand(mqtt, "COMMAND=2",requireActivity());
             Log.d("ToggleEndButton", "Đang dừng vòng lặp");
         }
         isRunning = false;

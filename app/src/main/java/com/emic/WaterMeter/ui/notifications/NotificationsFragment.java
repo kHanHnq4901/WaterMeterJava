@@ -78,13 +78,9 @@ public class NotificationsFragment extends Fragment {
         shareButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                     saveAndShareExcelFile();
-
             }
         });
-
-
         Button deleteButton = root.findViewById(R.id.deleteButton);
         deleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
