@@ -16,22 +16,21 @@ public class Config {
     private int saturation = 50 ;
     private double roundOld = 0.0;
     private double falseValueMeterOld = 0;
-    private double ratioOld = 0;
     private double correctionOld = 0;
     private double falseValueMeterOld1 = 0;
     private double roundOld1 = 0.0;
-    private double ratioOld1 = 0;
     private double correctionOld1 = 0;
     private double roundOld2 = 0.0;
     private double falseValueMeterOld2 = 0;
-    private double ratioOld2 = 0;
     private double correctionOld2 = 0;
+    private double roundOld3 = 0.0;
+    private double falseValueMeterOld3 = 0;
+    private double correctionOld3 = 0;
     private double round = 0.0;
     private boolean isConnect = false;
     private boolean isStart = false;
     private double valueMau = 0;
     private double falseValueMeter = 0;
-    private double ratio = 0;
     private double correction = 0;
     private double previousAngle = 0; // Lưu góc quay trước đó
     private double totalRotation = 0; // Tổng góc quay (tính cả phần thập phân)
@@ -176,17 +175,6 @@ public class Config {
         this.falseValueMeter  = falseValueMeter;
     }
 
-
-    public double getRatio() {
-        return ratio;
-    }
-
-    public void setRatio(double ratio) {
-        this.ratio = ratio;
-    }
-
-
-
     public double getCorrection() {
         return correction;
     }
@@ -258,15 +246,6 @@ public class Config {
     public void setFalseValueMeterOld(double falseValueMeterOld) {
         this.falseValueMeterOld = falseValueMeterOld;
     }
-
-    public double getRatioOld() {
-        return ratioOld;
-    }
-
-    public void setRatioOld(double ratioOld) {
-        this.ratioOld = ratioOld;
-    }
-
     public double getCorrectionOld() {
         return correctionOld;
     }
@@ -288,14 +267,6 @@ public class Config {
 
     public void setFalseValueMeterOld1(double falseValueMeterOld1) {
         this.falseValueMeterOld1 = falseValueMeterOld1;
-    }
-
-    public double getRatioOld1() {
-        return ratioOld1;
-    }
-
-    public void setRatioOld1(double ratioOld1) {
-        this.ratioOld1 = ratioOld1;
     }
 
     public double getCorrectionOld1() {
@@ -322,19 +293,34 @@ public class Config {
         this.falseValueMeterOld2 = falseValueMeterOld2;
     }
 
-    public double getRatioOld2() {
-        return ratioOld2;
-    }
-
-    public void setRatioOld2(double ratioOld2) {
-        this.ratioOld2 = ratioOld2;
-    }
-
     public double getCorrectionOld2() {
         return correctionOld2;
     }
 
     public void setCorrectionOld2(double correctionOld2) {
         this.correctionOld2 = correctionOld2;
+    }
+    public double getRoundOld3() {
+        return roundOld3;
+    }
+
+    public void setRoundOld3(double roundOld3) {
+        this.roundOld3 = roundOld3;
+    }
+
+    public double getFalseValueMeterOld3() {
+        return falseValueMeterOld3;
+    }
+
+    public void setFalseValueMeterOld3(double falseValueMeterOld3) {
+        this.falseValueMeterOld3= falseValueMeterOld3;
+    }
+
+    public double getCorrectionOld3() {
+        return correctionOld3;
+    }
+
+    public void setCorrectionOld3(double correctionOld3) {
+        this.correctionOld3 = correctionOld3;
     }
 }

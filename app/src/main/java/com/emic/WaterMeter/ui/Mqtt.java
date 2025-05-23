@@ -131,7 +131,7 @@ public class Mqtt {
                                 }
                                 String[] parts = payload.split("\\|");
 
-                                if (parts.length == 10) {
+                                if (parts.length == 9) {
                                     String serial = parts[1].trim();
                                     Log.d("MQTT", "Serial: " + serial);
 
@@ -157,19 +157,10 @@ public class Mqtt {
                                         System.err.println("Invalid round value: " + parts[4]);
                                     }
 
-                                    // Kiểm tra và xử lý chuyển đổi double cho ratio
-                                    double ratio = 0.0;
-                                    try {
-                                        ratio = parseDouble(parts[5]);
-                                        Log.d("MQTT", "Ratio: " + ratio);
-                                    } catch (NumberFormatException e) {
-                                        System.err.println("Invalid ratio value: " + parts[5]);
-                                    }
-
                                     // Kiểm tra và xử lý chuyển đổi double cho falseValue
                                     double falseValue = 0.0;
                                     try {
-                                        falseValue = parseDouble(parts[6]);
+                                        falseValue = parseDouble(parts[5]);
                                         Log.d("MQTT", "False Value: " + falseValue);
                                     } catch (NumberFormatException e) {
                                         System.err.println("Invalid falseValue: " + parts[6]);
@@ -179,22 +170,22 @@ public class Mqtt {
 
 
                                     // Kiểm tra giá trị tai và timestamp
-                                    String tai = parts[7].trim();
+                                    String tai = parts[6].trim();
                                     double ssDhmau = 0.0;
                                     try {
-                                        ssDhmau = parseDouble(parts[8]);
+                                        ssDhmau = parseDouble(parts[7]);
                                         Log.d("MQTT", "SS Dhmau: " + ssDhmau);
                                     } catch (NumberFormatException e) {
                                         System.err.println("Invalid ssDhmau value: " + parts[7]);
                                     }
-                                    String timestamp = parts[9].trim();
+                                    String timestamp = parts[8].trim();
 
                                     Log.d("MQTT", "Tai: " + tai);
                                     Log.d("MQTT", "Timestamp: " + timestamp);
 
                                     // Insert vào cơ sở dữ liệu
                                     try (DatabaseHelper dbHelper = new DatabaseHelper(context)) {
-                                        boolean isInserted = dbHelper.insertSaveMessage(serial, correction, type, round, ratio, tai, falseValue, ssDhmau, timestamp);
+                                        boolean isInserted = dbHelper.insertSaveMessage(serial, correction, type, round, tai, falseValue, ssDhmau, timestamp);
                                         if (isInserted) {
                                             Log.d("DatabaseHelper", "Data inserted successfully: " + serial);
                                         } else {
@@ -271,7 +262,6 @@ public class Mqtt {
                             config.setValueMau(0);
                             config.setFalseValueMeter(0);
                             config.setCorrection(0);
-                            config.setRatio(0);
                             config.setPreviousAngle(0); // Lưu góc quay trước đó
                             config.setTotalRotation(0); // Tổng góc quay (tính cả phần thập phân)
                             config.setAngleDifference(-1);
@@ -311,26 +301,24 @@ public class Mqtt {
                 }
                 private void handleSave() {
                     try {
-                        if (config == null) {
-                            System.err.println("Config is null, cannot proceed with handleSave.");
-                            return;
-                        }
-                        // Bước 1: Di chuyển Old1 → Old2
+                        // Bước 1: Di chuyển Old2 → Old3
+                        config.setRoundOld3(config.getRoundOld2());
+                        config.setFalseValueMeterOld3(config.getFalseValueMeterOld2());
+                        config.setCorrectionOld3(config.getCorrectionOld2());
+
+                        // Bước 2: Di chuyển Old1 → Old2
                         config.setRoundOld2(config.getRoundOld1());
                         config.setFalseValueMeterOld2(config.getFalseValueMeterOld1());
-                        config.setRatioOld2(config.getRatioOld1());
                         config.setCorrectionOld2(config.getCorrectionOld1());
 
-                        // Bước 2: Di chuyển Old → Old1
+                        // Bước 3: Di chuyển Old → Old1
                         config.setRoundOld1(config.getRoundOld());
                         config.setFalseValueMeterOld1(config.getFalseValueMeterOld());
-                        config.setRatioOld1(config.getRatioOld());
                         config.setCorrectionOld1(config.getCorrectionOld());
 
-                        // Bước 3: Cập nhật giá trị hiện tại → Old
+                        // Bước 4: Cập nhật giá trị hiện tại → Old
                         config.setRoundOld(config.getRound());
                         config.setFalseValueMeterOld(config.getFalseValueMeter());
-                        config.setRatioOld(config.getRatio());
                         config.setCorrectionOld(config.getCorrection());
 
                     } catch (Exception e) {
@@ -349,45 +337,34 @@ public class Mqtt {
                         DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.US);
                         DecimalFormat decimalFormat = new DecimalFormat("#.##", symbols);
 
-                        // Kiểm tra nếu config không null
-                        if (config == null) {
-                            System.err.println("Config is null, cannot proceed with handleSave.");
-                            return;
-                        }
-                        // Lưu giá trị Old1 vào biến tạm trước khi cập nhật
-                        double roundOld1Temp = config.getRoundOld1();
-                        double falseValueMeterOld1Temp = config.getFalseValueMeterOld1();
-                        double ratioOld1Temp = config.getRatioOld1();
-                        double correctionOld1Temp = config.getCorrectionOld1();
+                        if ("Kiểm".equals(config.getType())) {
+                            // Bước 1: Di chuyển Old2 → Old3
+                            config.setRoundOld3(config.getRoundOld2());
+                            config.setFalseValueMeterOld3(config.getFalseValueMeterOld2());
+                            config.setCorrectionOld3(config.getCorrectionOld2());
 
-                        // Cập nhật Old2 trước
-                        config.setRoundOld2(roundOld1Temp);
-                        config.setFalseValueMeterOld2(falseValueMeterOld1Temp);
-                        config.setRatioOld2(ratioOld1Temp);
-                        config.setCorrectionOld2(correctionOld1Temp);
+                            // Bước 2: Di chuyển Old1 → Old2
+                            config.setRoundOld2(config.getRoundOld1());
+                            config.setFalseValueMeterOld2(config.getFalseValueMeterOld1());
+                            config.setCorrectionOld2(config.getCorrectionOld1());
 
-                        // Kiểm tra xem Old2 đã cập nhật đúng chưa
-                        if (config.getRoundOld2() == roundOld1Temp &&
-                                config.getFalseValueMeterOld2() == falseValueMeterOld1Temp &&
-                                config.getRatioOld2() == ratioOld1Temp &&
-                                config.getCorrectionOld2() == correctionOld1Temp) {
+                            // Bước 3: Di chuyển Old → Old1
+                            config.setRoundOld1(config.getRoundOld());
+                            config.setFalseValueMeterOld1(config.getFalseValueMeterOld());
+                            config.setCorrectionOld1(config.getCorrectionOld());
 
-                            // Nếu Old2 cập nhật xong hết, mới cập nhật Old1
-                            config.setRoundOld1(config.getRound());
-                            config.setFalseValueMeterOld1(config.getFalseValueMeter());
-                            config.setRatioOld1(config.getRatio());
-                            config.setCorrectionOld1(config.getCorrection());
-                        } else {
-                            System.err.println("Error: Old2 values were not updated correctly. Aborting Old1 update.");
+                            // Bước 4: Cập nhật giá trị hiện tại → Old
+                            config.setRoundOld(config.getRound());
+                            config.setFalseValueMeterOld(config.getFalseValueMeter());
+                            config.setCorrectionOld(config.getCorrection());
                         }
                         // Tạo payload
-                        String payload = String.format("SAVE|%s|%s|%s|%s|%s|%s|%s|%s|%s",
+                        String payload = String.format("SAVE|%s|%s|%s|%s|%s|%s|%s|%s",
                                 safeString(config.getSerial()),
                                 safeDecimal(config.getCorrection(), decimalFormat),
                                 safeString(config.getType()),
                                 safeDecimal(config.getRound(), decimalFormat),
                                 safeDecimal(config.getFalseValueMeter(), decimalFormat),
-                                safeDecimal(config.getRatio(), decimalFormat),
                                 safeString(config.getTai()),
                                 safeString(String.valueOf(config.getSsDhm())),
                                 currentTime

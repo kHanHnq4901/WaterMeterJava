@@ -27,7 +27,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COLUMN_TAI = "tai";
     private static final String COLUMN_TYPE = "type";
     private static final String COLUMN_ROUND = "round";
-    private static final String COLUMN_RATIO = "ratio";
     private static final String COLUMN_FALSE_VALUE = "false_value";
     private static final String COLUMN_SS_DHMAU = "ss_dhmau";
     private static final String COLUMN_TIMESTAMP = "timestamp";
@@ -45,7 +44,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + COLUMN_TAI + " TEXT, "
                 + COLUMN_TYPE + " TEXT, "
                 + COLUMN_ROUND + " REAL, "
-                + COLUMN_RATIO + " REAL, "
                 + COLUMN_FALSE_VALUE + " REAL, "
                 + COLUMN_SS_DHMAU + " REAL, "
                 + COLUMN_TIMESTAMP + " TEXT)";
@@ -61,14 +59,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     // Hàm chèn dữ liệu vào bảng save_messages
-    public boolean insertSaveMessage(String serial, double correction, String type, double round, double ratio, String tai, double falseValue, double ssDhmau, String timestamp) {
+    public boolean insertSaveMessage(String serial, double correction, String type, double round ,String tai, double falseValue, double ssDhmau, String timestamp) {
         try (SQLiteDatabase db = this.getWritableDatabase()) {
             ContentValues values = new ContentValues();
             values.put(COLUMN_SERIAL, serial);
             values.put(COLUMN_CORRECTION, correction);
             values.put(COLUMN_TYPE, type);
             values.put(COLUMN_ROUND, round);
-            values.put(COLUMN_RATIO, ratio);
             values.put(COLUMN_TAI, tai);
             values.put(COLUMN_FALSE_VALUE, falseValue);
             values.put(COLUMN_SS_DHMAU, ssDhmau);
@@ -102,7 +99,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 @SuppressLint("Range") String tai = cursor.getString(cursor.getColumnIndex(COLUMN_TAI));
                 @SuppressLint("Range") String type = cursor.getString(cursor.getColumnIndex(COLUMN_TYPE));
                 @SuppressLint("Range") double round = cursor.getDouble(cursor.getColumnIndex(COLUMN_ROUND));
-                @SuppressLint("Range") double ratio = cursor.getDouble(cursor.getColumnIndex(COLUMN_RATIO));
                 @SuppressLint("Range") double falseValue = cursor.getDouble(cursor.getColumnIndex(COLUMN_FALSE_VALUE));
                 @SuppressLint("Range") double ssDhmau = cursor.getDouble(cursor.getColumnIndex(COLUMN_SS_DHMAU));
                 @SuppressLint("Range") String timestamp = cursor.getString(cursor.getColumnIndex(COLUMN_TIMESTAMP));
@@ -119,7 +115,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 }
 
                 // Thêm đối tượng SaveMessage vào danh sách
-                messages.add(new SaveMessage(serial, correction, tai, type, round, ratio, falseValue, ssDhmau, timestamp));
+                messages.add(new SaveMessage(serial, correction, tai, type, round, falseValue, ssDhmau, timestamp));
             }
 
             // Sắp xếp danh sách theo serial từ nhỏ đến lớn (sử dụng giá trị serialNumber đã chuyển đổi)

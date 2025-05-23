@@ -164,7 +164,6 @@ public class NotificationsFragment extends Fragment {
         TextView taiView = createTextView(message.getTai());
         TextView typeView = createTextView(String.valueOf(message.getType()));
         TextView roundView = createTextView(String.valueOf(message.getRound()));
-        TextView ratioView = createTextView(String.valueOf(message.getRatio()));
         TextView falseValueView = createTextView(String.valueOf(message.getFalseValue()));
         TextView ssDhmauView = createTextView(String.valueOf(message.getSsDhmau()));
         TextView timestampView = createTextView(message.getTimestamp());
@@ -178,8 +177,6 @@ public class NotificationsFragment extends Fragment {
         row.addView(typeView);
         row.addView(createDivider());
         row.addView(roundView);
-        row.addView(createDivider());
-        row.addView(ratioView);
         row.addView(createDivider());
         row.addView(falseValueView);
         row.addView(createDivider());
@@ -251,7 +248,7 @@ public class NotificationsFragment extends Fragment {
 
             // Tạo tiêu đề cột
             Row headerRow = sheet.createRow(0);
-            String[] columns = {"Serial", "Sai số", "Tải", "Loại", "Lượng nước", "Tỉ lệ", "Sai lệch", "Sai số dhMau", "Thời gian"};
+            String[] columns = {"Serial", "Sai số", "Tải", "Loại", "Lượng nước", "Sai lệch", "V chuẩn", "Thời gian"};
             for (int i = 0; i < columns.length; i++) {
                 Cell cell = headerRow.createCell(i);
                 cell.setCellValue(columns[i]);
@@ -284,21 +281,18 @@ public class NotificationsFragment extends Fragment {
                 cell4.setCellValue(message.getRound());
                 cell4.setCellStyle(rowStyle);
 
+
                 Cell cell5 = row.createCell(5);
-                cell5.setCellValue(message.getRatio());
+                cell5.setCellValue(message.getFalseValue());
                 cell5.setCellStyle(rowStyle);
 
                 Cell cell6 = row.createCell(6);
-                cell6.setCellValue(message.getFalseValue());
+                cell6.setCellValue(message.getSsDhmau());
                 cell6.setCellStyle(rowStyle);
 
                 Cell cell7 = row.createCell(7);
-                cell7.setCellValue(message.getSsDhmau());
+                cell7.setCellValue(message.getTimestamp());
                 cell7.setCellStyle(rowStyle);
-
-                Cell cell8 = row.createCell(8);
-                cell8.setCellValue(message.getTimestamp());
-                cell8.setCellStyle(rowStyle);
             }
 
             // Ghi vào file

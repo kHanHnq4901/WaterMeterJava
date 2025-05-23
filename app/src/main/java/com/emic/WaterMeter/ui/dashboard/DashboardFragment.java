@@ -89,11 +89,10 @@ public class DashboardFragment extends HomeFragment {
         // Button Setup
         // Nút "Làm Mới"
         binding.buttonLamMoi.setOnClickListener(v -> {
-            resetValues();
-            mqtt.sendMQTTCommand(mqtt, "COMMAND=3", requireActivity());
-
             // Ghi log lịch sử từ config
             HistoryLogger.logCurrentData(config);
+            resetValues();
+            mqtt.sendMQTTCommand(mqtt, "COMMAND=3", requireActivity());
         });
 
         binding.buttonLuu.setOnClickListener(v -> {
@@ -280,22 +279,24 @@ public class DashboardFragment extends HomeFragment {
     }
 
     private void saveCurrentConfig() {
+        // Bước 1: Di chuyển Old2 → Old3
+        config.setRoundOld3(config.getRoundOld2());
+        config.setFalseValueMeterOld3(config.getFalseValueMeterOld2());
+        config.setCorrectionOld3(config.getCorrectionOld2());
+
         // Bước 1: Di chuyển Old1 → Old2
         config.setRoundOld2(config.getRoundOld1());
         config.setFalseValueMeterOld2(config.getFalseValueMeterOld1());
-        config.setRatioOld2(config.getRatioOld1());
         config.setCorrectionOld2(config.getCorrectionOld1());
 
         // Bước 2: Di chuyển Old → Old1
         config.setRoundOld1(config.getRoundOld());
         config.setFalseValueMeterOld1(config.getFalseValueMeterOld());
-        config.setRatioOld1(config.getRatioOld());
         config.setCorrectionOld1(config.getCorrectionOld());
 
         // Bước 3: Cập nhật giá trị hiện tại → Old
         config.setRoundOld(config.getRound());
         config.setFalseValueMeterOld(config.getFalseValueMeter());
-        config.setRatioOld(config.getRatio());
         config.setCorrectionOld(config.getCorrection());
     }
 
@@ -593,8 +594,6 @@ public class DashboardFragment extends HomeFragment {
         double round = config.getTotalRotation() / 360;
         config.setRound(round);
 
-
-
         // Kiểm tra sự ổn định của số vòng quay và tính giá trị trung bình nếu ổn định
         if (isStable()) {
             // Cập nhật giá trị round trung bình khi ổn định
@@ -629,72 +628,114 @@ public class DashboardFragment extends HomeFragment {
         }
         return sum / values.size();
     }
+    private double calculateFlow() {
+        double currentVolume = config.getRound();
 
-    // Hàm tính lưu lượng từ sự thay đổi của các vòng quay gần nhất và thời gian tương ứng
-    private double calculateFlow(Queue<Double> recentRoundValues, Queue<Long> timestamps) {
-        if (recentRoundValues.size() < 2) {
-            return 0; // Không đủ 2 giá trị để tính lưu lượng
+        // Thêm vào hàng đợi
+        recentRoundValues.add(currentVolume);
+        timestamps.add(System.currentTimeMillis());
+
+        // Xóa dữ liệu cũ hơn 3 giây
+        while (!timestamps.isEmpty() && System.currentTimeMillis() - timestamps.peek() > 3000) {
+            recentRoundValues.poll();
+            timestamps.poll();
         }
 
-        // Lấy các giá trị vòng quay và thời gian từ hàng đợi
-        Double[] roundValues = recentRoundValues.toArray(new Double[0]);
-        Long[] timeStamps = timestamps.toArray(new Long[0]);
+        // Chuyển sang danh sách để có thể dùng get(index)
+        List<Double> roundHistory = new ArrayList<>(recentRoundValues);
+        List<Long> timeHistory = new ArrayList<>(timestamps);
 
-        // Tính sự thay đổi vòng quay và thời gian giữa hai lần cập nhật
-        double totalChange = 0;
-        double totalTime = 0; // Thời gian thay đổi (tính bằng giây)
+        if (roundHistory.size() < 2) return 0;
 
-        for (int i = 0; i < roundValues.length - 1; i++) {
-            double roundChange = Math.abs(roundValues[i] - roundValues[i + 1]);
-            long timeDiff = timeStamps[i + 1] - timeStamps[i]; // Chênh lệch thời gian giữa hai lần cập nhật
+        double startVolume = roundHistory.get(0);
+        double endVolume = roundHistory.get(roundHistory.size() - 1);
 
-            totalChange += roundChange;
-            totalTime += timeDiff / 1000.0; // Chuyển đổi từ mili giây sang giây
-        }
+        long startTime = timeHistory.get(0);
+        long endTime = timeHistory.get(timeHistory.size() - 1);
 
-        // Tính lưu lượng (tổng sự thay đổi vòng quay chia cho tổng thời gian)
-        if (totalTime > 0) {
-            return totalChange / totalTime;
-        }
+        double volumeDiff = endVolume - startVolume;
+        double timeDiffSec = (endTime - startTime) / 1000.0;
 
-        return 0; // Nếu không có thay đổi thời gian hợp lệ, trả về 0
+        if (timeDiffSec <= 0) return 0;
+
+        // Lưu lượng tính theo m³/h
+        return volumeDiff / (timeDiffSec / 3600.0);
     }
 
     @SuppressLint("SetTextI18n")
     private void updateUIWithMQTT() {
         DecimalFormat decimalFormat = new DecimalFormat("#.##");
-        int textColorOld = (config.getCorrectionOld() < -1.5 || config.getCorrectionOld() > 1.5) ? Color.RED : Color.GREEN;
-        int textColorOld1 = (config.getCorrectionOld1() < -1.5 || config.getCorrectionOld1() > 1.5) ? Color.RED : Color.GREEN;
-        int textColorOld2 = (config.getCorrectionOld2() < -1.5 || config.getCorrectionOld2() > 1.5) ? Color.RED : Color.GREEN;
-        TextView textViewLuongNuocOld = binding.textViewLuongNuocValueOld;
-        TextView textViewChenhLechOld = binding.textViewChenhLechValueOld;
-        TextView textViewSaiSoOld = binding.textViewSaiSoValueOld;
-        TextView textViewLuongNuocOld1 = binding.textViewLuongNuocValueOld1;
-        TextView textViewChenhLechOld1 = binding.textViewChenhLechValueOld1;
-        TextView textViewSaiSoOld1 = binding.textViewSaiSoValueOld1;
-        TextView textViewLuongNuocOld2 = binding.textViewLuongNuocValueOld2;
-        TextView textViewChenhLechOld2 = binding.textViewChenhLechValueOld2;
-        TextView textViewSaiSoOld2 = binding.textViewSaiSoValueOld2;
-        textViewLuongNuocOld.setText(decimalFormat.format(config.getRoundOld()) + " Lít");
-        textViewChenhLechOld.setText(decimalFormat.format(config.getFalseValueMeterOld()) + " Lít");
-        textViewSaiSoOld.setText(decimalFormat.format(config.getCorrectionOld()) + " %");
-        textViewLuongNuocOld1.setText(decimalFormat.format(config.getRoundOld1()) + " Lít");
-        textViewChenhLechOld1.setText(decimalFormat.format(config.getFalseValueMeterOld1()) + " Lít");
-        textViewSaiSoOld1.setText(decimalFormat.format(config.getCorrectionOld1()) + " %");
-        textViewLuongNuocOld2.setText(decimalFormat.format(config.getRoundOld2()) + " Lít");
-        textViewChenhLechOld2.setText(decimalFormat.format(config.getFalseValueMeterOld2()) + " Lít");
-        textViewSaiSoOld2.setText(decimalFormat.format(config.getCorrectionOld2()) + " %");
-        textViewChenhLechOld.setTextColor(textColorOld);
-        textViewSaiSoOld.setTextColor(textColorOld);
-        textViewChenhLechOld1.setTextColor(textColorOld1);
-        textViewSaiSoOld1.setTextColor(textColorOld1);
-        textViewChenhLechOld2.setTextColor(textColorOld2);
-        textViewSaiSoOld2.setTextColor(textColorOld2);
+        TextView[] textViewLuongNuocOlds = {
+                binding.textViewLuongNuocValueOld,
+                binding.textViewLuongNuocValueOld1,
+                binding.textViewLuongNuocValueOld2,
+                binding.textViewLuongNuocValueOld3
+        };
+
+        TextView[] textViewChenhLechOlds = {
+                binding.textViewChenhLechValueOld,
+                binding.textViewChenhLechValueOld1,
+                binding.textViewChenhLechValueOld2,
+                binding.textViewChenhLechValueOld3
+        };
+
+        TextView[] textViewSaiSoOlds = {
+                binding.textViewSaiSoValueOld,
+                binding.textViewSaiSoValueOld1,
+                binding.textViewSaiSoValueOld2,
+                binding.textViewSaiSoValueOld3
+        };
+
+        double[] roundOlds = {
+                config.getRoundOld(),
+                config.getRoundOld1(),
+                config.getRoundOld2(),
+                config.getRoundOld3()
+        };
+
+        double[] falseValueOlds = {
+                config.getFalseValueMeterOld(),
+                config.getFalseValueMeterOld1(),
+                config.getFalseValueMeterOld2(),
+                config.getFalseValueMeterOld3()
+        };
+
+        double[] correctionOlds = {
+                config.getCorrectionOld(),
+                config.getCorrectionOld1(),
+                config.getCorrectionOld2(),
+                config.getCorrectionOld3()
+        };
+
+        for (int i = 0; i < 4; i++) {
+            textViewLuongNuocOlds[i].setText(decimalFormat.format(roundOlds[i]) + " Lít");
+            textViewChenhLechOlds[i].setText(decimalFormat.format(falseValueOlds[i]) + " Lít");
+            textViewSaiSoOlds[i].setText(decimalFormat.format(correctionOlds[i]) + " %");
+
+            int textColor = (correctionOlds[i] < -1.5 || correctionOlds[i] > 1.5) ? Color.RED : Color.GREEN;
+            textViewChenhLechOlds[i].setTextColor(textColor);
+            textViewSaiSoOlds[i].setTextColor(textColor);
+        }
+
         if (config.getIsStart()) {
+            double flow = calculateFlow();
+
+            TextView textViewActualFlowValue = binding.textViewActualFlowValue;
+
+            String flowDisplay;
+            if (flow >= 1.0) {
+                flowDisplay = String.format(Locale.getDefault(), "%.2f m³/h", flow);
+            } else {
+                flowDisplay = String.format(Locale.getDefault(), "%.2f Lít/h", flow * 1000);
+            }
+
+            // Cập nhật text và màu xanh
+            textViewActualFlowValue.setText(flowDisplay);
+            textViewActualFlowValue.setTextColor(Color.parseColor("#007BFF")); // màu xanh dương dịu
+
+            textViewActualFlowValue.setText(flowDisplay);
             TextView textView6 = binding.textViewLuongNuocValueNew;
             textView6.setText(decimalFormat.format(config.getRound()) + " Lít");
-        }
-        if (config.getIsStart()) {
             TextView textView7 = binding.textViewChenhLechValueNew;
             TextView textView9 = binding.textViewSaiSoValueNew;
             // Tính toán
@@ -705,16 +746,10 @@ public class DashboardFragment extends HomeFragment {
             config.setFalseValueMeter(falseValue);
 
             double correction = 0;
-            double ratioValue = 0;
 
             if (VChuan != 0) {
                 correction = falseValue * 100 / VChuan;
-                ratioValue = (falseValue / round) * 100;
             }
-            config.setCorrection(correction);
-            config.setRatio(ratioValue);
-            // ((( ss đhm /100 ) + 1 ) * (tỉ lệ sai lệch đh Mẫu với đh kiểm / 100 + 1) -1)* 100
-            config.setRatio(ratioValue);
             config.setCorrection(correction);
 
             int textColor = (correction < -1.5 || correction > 1.5) ? Color.RED : Color.GREEN;
@@ -743,7 +778,6 @@ public class DashboardFragment extends HomeFragment {
         setTextView(textView, value, unit);
         textView.setTextColor(textColor);
     }
-
 
     // Hàm tính khoảng cách giữa hai điểm
     public double distanceCalculate(Point p1, Point p2) {

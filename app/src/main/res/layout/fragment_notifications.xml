@@ -86,15 +86,7 @@
                     android:layout_width="100dp"
                     android:layout_height="match_parent"
                     android:gravity="center"
-                    android:text="Tỉ lệ"
-                    android:textColor="#FFFFFF"
-                    android:textSize="12sp" />
-
-                <TextView
-                    android:layout_width="100dp"
-                    android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:text="Sai số đh mẫu"
+                    android:text="V chuẩn"
                     android:textColor="#FFFFFF"
                     android:textSize="12sp" />
 
@@ -178,6 +170,4 @@
             android:paddingVertical="10dp"
             android:paddingHorizontal="10dp" />
     </LinearLayout>
-
-
 </androidx.constraintlayout.widget.ConstraintLayout>
