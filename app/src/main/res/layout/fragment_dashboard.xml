@@ -351,31 +351,7 @@
             android:stretchColumns="*"
             android:padding="1dp"
             android:background="#FFFFFF">
-            <TableRow android:background="@color/gray">
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:background="@drawable/border_cell"
-                    android:text="Lưu Lượng Thực Tế"
-                    android:textStyle="bold"
-                    android:padding="1dp"
-                    android:textSize="16sp"
-                    android:textColor="@color/black"
-                    android:gravity="center"
-                    android:layout_gravity="center"/>
-                <TextView
-                    android:id="@+id/textViewActualFlowValue"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:background="@drawable/border_cell"
-                    android:text=""
-                    android:textStyle="bold"
-                    android:padding="1dp"
-                    android:textSize="16sp"
-                    android:textColor="@color/black"
-                    android:gravity="center"
-                    android:layout_gravity="center"/>
-            </TableRow>
+            <TableRow android:background="@color/gray"/>
             <!-- Row Title -->
             <TableRow android:background="@color/gray">
                 <TextView
