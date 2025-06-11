@@ -1,6 +1,7 @@
 [versions]
 agp = "8.6.0"
 appUpdate = "2.1.0"
+barcodeScanning = "17.3.0"
 cameraCore = "1.4.1"
 datastorePreferences = "1.1.2"
 gson = "2.10.1"
@@ -24,10 +25,12 @@ orgEclipsePahoClientMqttv3 = "1.2.5"
 orgEclipsePahoClientMqttv3Version = "1.2.0"
 poi = "5.2.3"
 staxApi = "1.0"
+textRecognition = "16.0.1"
 workRuntimeKtx = "2.10.0"
 
 [libraries]
 app-update = { module = "com.google.android.play:app-update", version.ref = "appUpdate" }
+barcode-scanning = { module = "com.google.mlkit:barcode-scanning", version.ref = "barcodeScanning" }
 camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "cameraCore" }
 camera-core = { module = "androidx.camera:camera-core", version.ref = "cameraCore" }
 camera-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "cameraCore" }
@@ -55,6 +58,7 @@ org-eclipse-paho-client-mqttv3-v120 = { module = "org.eclipse.paho:org.eclipse.p
 poi = { module = "org.apache.poi:poi", version.ref = "poi" }
 poi-ooxml = { module = "org.apache.poi:poi-ooxml", version.ref = "poi" }
 stax-api = { module = "javax.xml.stream:stax-api", version.ref = "staxApi" }
+text-recognition = { module = "com.google.mlkit:text-recognition", version.ref = "textRecognition" }
 work-runtime = { module = "androidx.work:work-runtime", version.ref = "workRuntimeKtx" }
 work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "workRuntimeKtx" }
 

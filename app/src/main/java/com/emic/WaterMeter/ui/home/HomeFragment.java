@@ -70,10 +70,11 @@ public class HomeFragment extends Fragment {
         mqtt = Mqtt.getInstance(); // Singleton instance
 
         // Thiết lập giá trị ban đầu cho EditText
-        binding.serialInput.setText(config.getSerial());
-        binding.stagingInput.setText(config.getStaging());
-        binding.ipInput.setText(config.getIp());
-        binding.portInput.setText(config.getPort());
+        // Gán trực tiếp từ SharedPreferences vào EditText
+        binding.serialInput.setText(sharedPreferences.getString("serial", ""));
+        binding.stagingInput.setText(sharedPreferences.getString("staging", ""));
+        binding.ipInput.setText(sharedPreferences.getString("ip", "14.225.244.63"));
+        binding.portInput.setText(sharedPreferences.getString("port", "2883"));
 
         // Chọn radio button phù hợp
         int radioButtonId = config.getType().equals("Kiểm") ? R.id.typeSample : R.id.typeCheck;

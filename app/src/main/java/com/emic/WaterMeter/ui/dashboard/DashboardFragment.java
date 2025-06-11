@@ -42,6 +42,7 @@ import com.emic.watermeter.ui.Config;
 import com.emic.watermeter.ui.ConfigManager;
 import com.emic.watermeter.ui.HistoryLogger;
 import com.emic.watermeter.ui.Mqtt;
+import com.emic.watermeter.ui.MultiModeAnalyzer;
 import com.emic.watermeter.ui.home.HomeFragment;
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -68,6 +69,8 @@ import java.util.Queue;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class DashboardFragment extends HomeFragment {
     private FragmentDashboardBinding binding;
@@ -87,7 +90,6 @@ public class DashboardFragment extends HomeFragment {
         setupSeekBar();
         setupUIVisibility();
         // Button Setup
-        // Nút "Làm Mới"
         binding.buttonLamMoi.setOnClickListener(v -> {
             // Ghi log lịch sử từ config
             HistoryLogger.logCurrentData(config);
@@ -405,6 +407,17 @@ public class DashboardFragment extends HomeFragment {
     @OptIn(markerClass = ExperimentalGetImage.class)
     private CameraControl cameraControl; // Thêm biến CameraControl
 
+    // Khởi tạo MultiModeAnalyzer với callback kết quả
+    private final MultiModeAnalyzer multiAnalyzer = new MultiModeAnalyzer(value -> {
+        requireActivity().runOnUiThread(() -> {
+            if (!value.equals(config.getSerial())) {
+                config.setSerial(value);
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putString("serial", config.getSerial());
+                editor.apply(); // Hoặc editor.commit();
+            }
+        });
+    });
     private void startCamera() {
         ListenableFuture<ProcessCameraProvider> cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext());
         cameraProviderFuture.addListener(() -> {
@@ -417,10 +430,11 @@ public class DashboardFragment extends HomeFragment {
                         .build();
                 imageAnalysis.setAnalyzer(ContextCompat.getMainExecutor(requireContext()), imageProxy -> {
                     try {
+
                         updateUIWithMQTT();
                         Mat matRGB = imageProxyToMat(imageProxy);
                         Mat matHSV = new Mat();
-
+                        multiAnalyzer.analyze(imageProxy);// Nó sẽ tự đóng imageProxy
                         Imgproc.cvtColor(matRGB, matHSV, Imgproc.COLOR_RGB2HSV);
                         Point center = new Point((double) matHSV.width() / 2, (double) matHSV.height() / 2);
 
@@ -529,14 +543,12 @@ public class DashboardFragment extends HomeFragment {
                         Imgproc.line(matRGB, new Point(center.x, center.y - 10), new Point(center.x, center.y + 10), new Scalar(0, 0, 255), 2);
                         TextView textSerial = binding.textSerial;
                         TextView textDan = binding.textDan;
-                        TextView textSTT = binding.textSTT;
                         TextView textLoai = binding.textLoai;
                         TextView textTai = binding.textTai;
                         TextView textSaiSo = binding.textSaiSo;
 
                         textSerial.setText("Serial: " + config.getSerial());
                         textDan.setText("Dàn: " + config.getStaging());
-                        textSTT.setText("Stt: " + config.getStt());
                         textLoai.setText("Loại: " + config.getType());
                         textTai.setText("Tải: " + config.getTai());
                         textSaiSo.setText("V chuẩn: " + config.getSsDhm());
@@ -723,9 +735,8 @@ public class DashboardFragment extends HomeFragment {
         if (config.getIsStart()) {
             //double flow = calculateFlow();
             //TextView textViewActualFlowValue = binding.textViewActualFlowValue;
-
             //String flowDisplay = (flow >= 1.0)
-            //        ? String.format(Locale.getDefault(), "%.2f m³/h", flow)
+            //        ? String.format(Locale.getDefault(), "%.2f m³/h", flow)0
 
             //       : String.format(Locale.getDefault(), "%.2f Lít/h", flow * 1000);
 
