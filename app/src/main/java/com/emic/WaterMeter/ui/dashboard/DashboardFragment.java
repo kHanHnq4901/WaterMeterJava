@@ -2,21 +2,26 @@ package com.emic.watermeter.ui.dashboard;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.app.DownloadManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.media.Image;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.telecom.Call;
 import android.text.InputType;
 import android.text.SpannableString;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.PixelCopy;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.RadioButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -24,7 +29,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.OptIn;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.camera.core.Camera;
 import androidx.camera.core.CameraControl;
 import androidx.camera.core.ExperimentalGetImage;
@@ -42,10 +46,17 @@ import com.emic.watermeter.ui.Config;
 import com.emic.watermeter.ui.ConfigManager;
 import com.emic.watermeter.ui.HistoryLogger;
 import com.emic.watermeter.ui.Mqtt;
-import com.emic.watermeter.ui.MultiModeAnalyzer;
 import com.emic.watermeter.ui.home.HomeFragment;
+import com.google.android.gms.common.api.Response;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.mlkit.vision.barcode.BarcodeScanner;
+import com.google.mlkit.vision.barcode.BarcodeScannerOptions;
+import com.google.mlkit.vision.barcode.BarcodeScanning;
+import com.google.mlkit.vision.barcode.common.Barcode;
+import com.google.mlkit.vision.common.InputImage;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.opencv.android.Utils;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
@@ -56,21 +67,22 @@ import org.opencv.core.Point;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Queue;
 import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.regex.Pattern;
+
+import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
 
 public class DashboardFragment extends HomeFragment {
     private FragmentDashboardBinding binding;
@@ -99,11 +111,13 @@ public class DashboardFragment extends HomeFragment {
 
         binding.buttonLuu.setOnClickListener(v -> {
             saveCurrentConfig();
+            saveCalibPsoft (config.getTai());
             mqtt.sendMQTTCommand(mqtt, "COMMAND=4", requireActivity());
         });
 
         binding.buttonLuuExcel.setOnClickListener(v -> {
             saveCurrentConfig();
+            saveCalibPsoft (config.getTai());
             mqtt.sendMQTTCommand(mqtt, "COMMAND=5", requireActivity());
         });
 
@@ -302,6 +316,58 @@ public class DashboardFragment extends HomeFragment {
         config.setCorrectionOld(config.getCorrection());
     }
 
+    private void saveCalibPsoft(String tai) {
+        String serial = config.getSerial();
+        String pcid = config.getStaging();
+        String q1 = "", q2 = "", q3 = "", q4 = "";
+
+        switch (tai) {
+            case "QI": q1 = String.valueOf(config.getCorrection()); break;
+            case "QII": q2 = String.valueOf(config.getCorrection()); break;
+            case "QIII": q3 = String.valueOf(config.getCorrection()); break;
+            case "Q3": q4 = String.valueOf(config.getCorrection()); break;
+            default: return;
+        }
+
+        try {
+            JSONObject json = new JSONObject();
+            json.put("Serial", serial);
+            if (!q1.isEmpty()) json.put("Q1", q1);
+            if (!q2.isEmpty()) json.put("Q2", q2);
+            if (!q3.isEmpty()) json.put("Q3", q3);
+            if (!q4.isEmpty()) json.put("Q4", q4);
+            json.put("PCID", pcid);
+
+            String url = "http://172.21.6.201:8023/Api/SaveEWCalib";
+            String jsonBody = json.toString();
+
+            RequestBody body = RequestBody.create(jsonBody, MediaType.parse("application/json"));
+            Request request = new Request.Builder()
+                    .url(url)
+                    .post(body)
+                    .build();
+            new OkHttpClient().newCall(request).enqueue(new Callback() {
+                @Override
+                public void onResponse(@NonNull okhttp3.Call call, @NonNull okhttp3.Response response) throws IOException {
+
+
+                }
+
+                @Override
+                public void onFailure(@NonNull okhttp3.Call call, @NonNull IOException e) {
+                    Log.e("API", "Gửi sai số thất bại: " + e.getMessage());
+
+                }
+            });
+        } catch (Exception e) {
+            Log.e("API", "Lỗi JSON hoặc gửi request: " + e.getMessage());
+        }
+    }
+
+
+
+
+
 
     private String getErrValue(String tai) {
         switch (tai) {
@@ -407,35 +473,60 @@ public class DashboardFragment extends HomeFragment {
     @OptIn(markerClass = ExperimentalGetImage.class)
     private CameraControl cameraControl; // Thêm biến CameraControl
 
-    // Khởi tạo MultiModeAnalyzer với callback kết quả
-    private final MultiModeAnalyzer multiAnalyzer = new MultiModeAnalyzer(value -> {
-        requireActivity().runOnUiThread(() -> {
-            if (!value.equals(config.getSerial())) {
-                config.setSerial(value);
-                SharedPreferences.Editor editor = sharedPreferences.edit();
-                editor.putString("serial", config.getSerial());
-                editor.apply(); // Hoặc editor.commit();
-            }
-        });
-    });
+    // Khởi tạo MultiModeAnalyzer với callback kết qu
+    @OptIn(markerClass = ExperimentalGetImage.class)
     private void startCamera() {
         ListenableFuture<ProcessCameraProvider> cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext());
         cameraProviderFuture.addListener(() -> {
             try {
                 ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
 
-                // Tạo ImageAnalysis use case
+                // ImageAnalysis: giữ frame mới nhất và định dạng YUV
                 ImageAnalysis imageAnalysis = new ImageAnalysis.Builder()
                         .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                        .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_YUV_420_888)
                         .build();
+
                 imageAnalysis.setAnalyzer(ContextCompat.getMainExecutor(requireContext()), imageProxy -> {
                     try {
-
                         updateUIWithMQTT();
-                        Mat matRGB = imageProxyToMat(imageProxy);
+
+                        // 👉 Tạo InputImage trực tiếp từ YUV Image
+                        Image mediaImage = imageProxy.getImage();
+                        if (mediaImage == null) {
+                            imageProxy.close();
+                            return;
+                        }
+
+                        int rotationDegrees = imageProxy.getImageInfo().getRotationDegrees();
+                        InputImage inputImage = InputImage.fromMediaImage(mediaImage, rotationDegrees);
+
+                        BarcodeScannerOptions options =
+                                new BarcodeScannerOptions.Builder()
+                                        .setBarcodeFormats(
+                                                Barcode.FORMAT_QR_CODE // Nếu bạn muốn hỗ trợ tất cả, bỏ dòng này
+                                        )
+                                        .build();
+
+                        BarcodeScanner scanner = BarcodeScanning.getClient(options);
+
+                        scanner.process(inputImage)
+                                .addOnSuccessListener(barcodes -> {
+                                    if (!barcodes.isEmpty()) {
+                                        String rawValue = barcodes.get(0).getRawValue();
+                                        if (rawValue != null) {
+                                            config.setSerial(rawValue);
+                                        }
+                                    }
+                                })
+                                .addOnFailureListener(e -> Log.e("QR", "Barcode scanning failed", e));
+
+
+                        // 👉 Chuyển từ imageProxy sang Mat để xử lý màu
+                        Mat matRGB = imageProxyToMat(imageProxy); // cần định nghĩa đúng hàm này
                         Mat matHSV = new Mat();
-                        multiAnalyzer.analyze(imageProxy);// Nó sẽ tự đóng imageProxy
                         Imgproc.cvtColor(matRGB, matHSV, Imgproc.COLOR_RGB2HSV);
+
                         Point center = new Point((double) matHSV.width() / 2, (double) matHSV.height() / 2);
 
                         Core.inRange(matHSV, lowRed, highRed, mask1);
@@ -537,8 +628,6 @@ public class DashboardFragment extends HomeFragment {
                                 config.setPreviousAngle(config.getAngel());
                             }
                         }
-
-
                         Imgproc.line(matRGB, new Point(center.x - 10, center.y), new Point(center.x + 10, center.y), new Scalar(0, 0, 255), 2);
                         Imgproc.line(matRGB, new Point(center.x, center.y - 10), new Point(center.x, center.y + 10), new Scalar(0, 0, 255), 2);
                         TextView textSerial = binding.textSerial;
@@ -726,7 +815,7 @@ public class DashboardFragment extends HomeFragment {
             textViewChenhLechOlds[i].setText(decimalFormat.format(falseValueOlds[i]) + " Lít");
             textViewSaiSoOlds[i].setText(decimalFormat.format(correctionOlds[i]) + " %");
 
-            int textColor = (correctionOlds[i] < -1.5 || correctionOlds[i] > 1.5) ? Color.RED : Color.GREEN;
+            int textColor = (correctionOlds[i] < -1.5 || correctionOlds[i] > 1.5) ? Color.RED : Color.BLACK;
             textViewChenhLechOlds[i].setTextColor(textColor);
             textViewSaiSoOlds[i].setTextColor(textColor);
         }
@@ -758,7 +847,7 @@ public class DashboardFragment extends HomeFragment {
             config.setCorrection(correction);
 
             // Cập nhật giao diện
-            int textColor = (correction < -1.5 || correction > 1.5) ? Color.RED : Color.GREEN;
+            int textColor = (correction < -1.5 || correction > 1.5) ? Color.RED : Color.BLACK;
 
             TextView textViewChenhLechMoi = binding.textViewChenhLechValueNew;
             TextView textViewSaiSoMoi = binding.textViewSaiSoValueNew;

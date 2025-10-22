@@ -4,14 +4,14 @@ plugins {
 
 android {
     namespace = "com.emic.watermeter"
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.emic.watermeter"
         minSdk = 26
-        targetSdk = 34
-        versionCode = 31
-        versionName = "3.0.9"
+        targetSdk = 36
+        versionCode = 39
+        versionName = "3.1.7"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -34,12 +34,9 @@ android {
 }
 
 dependencies {
-    // AndroidX Libraries
-// ML Kit Text Recognition
-    implementation (libs.text.recognition)
+    implementation (libs.barcode.scanning.v1720)
 
-// ML Kit Barcode Scanning
-    implementation (libs.barcode.scanning)
+    implementation (libs.okhttp)
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.constraintlayout)

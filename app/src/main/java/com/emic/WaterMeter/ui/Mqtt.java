@@ -5,16 +5,22 @@ import static java.lang.Double.parseDouble;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Build;
+import android.telecom.Call;
 import android.util.Log;
 
 import android.view.View;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+
+import com.google.android.gms.common.api.Response;
 import com.google.android.material.snackbar.Snackbar;
 
 import org.eclipse.paho.client.mqttv3.*;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
+import org.json.JSONObject;
 
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.SimpleDateFormat;
@@ -25,6 +31,12 @@ import java.util.Random;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
 
 
 public class Mqtt {
@@ -270,10 +282,12 @@ public class Mqtt {
                             break;
                         case 4:
                             runOnUiThread(() -> Toast.makeText(context, "Đang lưu", Toast.LENGTH_LONG).show());
+                            saveCalibPsoft(config.getTai());
                             handleSave();
                             break;
                         case 5:
                             runOnUiThread(() -> Toast.makeText(context, "Đang lưu", Toast.LENGTH_LONG).show());
+                            saveCalibPsoft(config.getTai());
                             handleSaveExcel(context);
                             break;
                         default:
@@ -286,7 +300,53 @@ public class Mqtt {
                     // Gán giá trị vào config
                     config.setValueMau(roundValue);
                 }
+                private void saveCalibPsoft(String tai) {
+                        String serial = config.getSerial();
+                        String pcid = config.getStaging();
+                        String q1 = "", q2 = "", q3 = "", q4 = "";
 
+                        switch (tai) {
+                            case "QI": q1 = String.valueOf(config.getCorrection()); break;
+                            case "QII": q2 = String.valueOf(config.getCorrection()); break;
+                            case "QIII": q3 = String.valueOf(config.getCorrection()); break;
+                            case "Q3": q4 = String.valueOf(config.getCorrection()); break;
+                            default: return;
+                        }
+
+                        try {
+                            JSONObject json = new JSONObject();
+                            json.put("Serial", serial);
+                            if (!q1.isEmpty()) json.put("Q1", q1);
+                            if (!q2.isEmpty()) json.put("Q2", q2);
+                            if (!q3.isEmpty()) json.put("Q3", q3);
+                            if (!q4.isEmpty()) json.put("Q4", q4);
+                            json.put("PCID", pcid);
+
+                            String url = "http://172.21.6.201:8023/Api/SaveEWCalib";
+                            String jsonBody = json.toString();
+
+                            RequestBody body = RequestBody.create(jsonBody, MediaType.parse("application/json"));
+                            Request request = new Request.Builder()
+                                    .url(url)
+                                    .post(body)
+                                    .build();
+                            new OkHttpClient().newCall(request).enqueue(new Callback() {
+                                @Override
+                                public void onResponse(@NonNull okhttp3.Call call, @NonNull okhttp3.Response response) throws IOException {
+
+
+                                }
+
+                                @Override
+                                public void onFailure(@NonNull okhttp3.Call call, @NonNull IOException e) {
+                                    Log.e("API", "Gửi sai số thất bại: " + e.getMessage());
+
+                                }
+                            });
+                        } catch (Exception e) {
+                            Log.e("API", "Lỗi JSON hoặc gửi request: " + e.getMessage());
+                        }
+                    }
                 private void handleError(String errorValue) {
                     System.out.println("Received ERROR value: " + errorValue);
                     double value = Double.parseDouble(errorValue);
